@@ -679,3 +679,15 @@ body.thawing .ice .aurora { opacity: 1; }
 .ph-panel h3 b { padding-top: 0; line-height: 1; }
 .manifest blockquote::before, .manifest blockquote::after { font: 400 34px/1 var(--f-en); color: #9aaae0; }
 #rTruth::before, #rTruth::after, .sc-quote::before, .sc-quote::after { font-family: var(--f-en); font-size: 1.2em; line-height: 0; vertical-align: -.1em; }
+
+/* ───────── pull-quote marks: one large opening mark set above the line, nothing inline ───────── */
+#rTruth::before, .truth-card #rTruth::before, .sc-quote::before, .manifest blockquote::before {
+  content: "\201C"; display: block; position: static; margin: 0 auto; text-align: center; vertical-align: 0;
+  font: 400 96px/1 "Cormorant Garamond", "Bodoni Moda", Georgia, serif; height: .5em; overflow: visible; }
+#rTruth::after, .truth-card #rTruth::after, .sc-quote::after, .manifest blockquote::after { content: none; }
+.truth-card #rTruth::before { color: rgba(190, 206, 255, .55); margin-bottom: 18px; }
+.truth-card #rTruth { text-align: center; }
+.manifest blockquote { text-align: center; padding-top: 26px; }
+.manifest blockquote::before { color: #b4c2ef; margin-bottom: 14px; left: auto; top: auto; }
+.sc-quote { border-top: 0; padding-top: 4px; }
+.sc-quote::before { color: #b4c2ef; margin-bottom: 14px; }
