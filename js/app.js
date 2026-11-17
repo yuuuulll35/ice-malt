@@ -342,7 +342,7 @@ void main(){
       else if (k === '얼음') { const n = +(v.match(/[1-5]/) || [0])[0]; if (n) out.ice = { level: n, why: parts(v).slice(1).join(' · ') }; }
       else if (k === '해동') {
         const body = tail(v, '속마음') || unwrap(v.replace(/[\[(（]\s*감정[^\])）]*[\])）]/, ''));
-        if (body) out.balloons.push({ tag: field(v, '감정'), text: body });
+        if (body) out.balloons.push({ tag: field(v, '감정'), when: field(v, '시점'), text: body });
       } else if (k === '본심') out.final = unwrap(v);
     }
     if (out.balloons.length < 3) throw new Error(out.balloons.length ? '해동 항목이 너무 적어요. 답이 중간에 끊겼다면 채팅에서 다시 받아 주세요.' : '해동 항목을 찾지 못했어요. AI가 쓴 답의 코드 블록을 통째로 복사해 주세요.');
@@ -379,7 +379,7 @@ void main(){
 
   function normalize(d) {
     if (!d || typeof d !== 'object') throw new Error('데이터 형식이 올바르지 않아요.');
-    const balloons = (Array.isArray(d.balloons) ? d.balloons : []).map(b => ({ tag: str(b && b.tag, 16), text: str(b && b.text, 300) })).filter(b => b.text).slice(0, 16);
+    const balloons = (Array.isArray(d.balloons) ? d.balloons : []).map(b => ({ tag: str(b && b.tag, 16), when: str(b && b.when, 16), text: str(b && b.text, 300) })).filter(b => b.text).slice(0, 16);
     if (balloons.length < 2) throw new Error('속마음이 비어 있어요. 채팅에서 다시 받아 주세요.');
     const c = d.crystal || {}, light = c.light || {};
     const rng = seeded(str(c.name) + str(d.npc)), keys = Object.keys(STYLE_KO);
@@ -791,6 +791,13 @@ void main(){
     later(() => { body.classList.add('thawed'); $('#toResult').focus({ preventScroll: true }); state.heartRect = ice.getBoundingClientRect(); }, reduce ? 100 : 1900);
   }
 
+  const WHEN_FALLBACK = ['처음 며칠', '조금 익숙해질 무렵', '가까워지던 때', '마음이 깊어지던 무렵', '얼마 전'];
+  function whenLabel(b, i, n) {
+    if (b.when) return b.when;
+    if (i === 0) return '첫 만남';
+    if (i === n - 1) return '지금';
+    return WHEN_FALLBACK[Math.min(WHEN_FALLBACK.length - 1, Math.floor((i - 1) / Math.max(1, n - 2) * WHEN_FALLBACK.length))];
+  }
   function fillList(host, items, make) { host.textContent = ''; items.forEach((it, i) => host.appendChild(make(it, i))); }
   function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
 
@@ -831,7 +838,7 @@ void main(){
     $('#rArms').closest('.item').hidden = !named.length;
     fillList($('#rLog'), d.balloons, (b, i) => {
       const li = el('li'), head = el('p', 'tl-head');
-      head.append(el('span', 'tl-no', String(i + 1).padStart(2, '0')));
+      head.append(el('span', 'tl-when', whenLabel(b, i, d.balloons.length)));
       if (b.tag) head.append(el('b', 'tl-tag', b.tag));
       li.append(head, el('p', 'tl-text', b.text));
       return li;
