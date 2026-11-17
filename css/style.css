@@ -599,3 +599,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .duo .item.frozen, .duo .item.thawed { box-shadow: none; }
 .arm-part { font: 500 12px/1.5 var(--f-body); letter-spacing: .04em; color: var(--ink); }
 .aurora i { will-change: transform; }
+.sheet.capturing .car { margin: 0; }
+.sheet.capturing .arms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; padding: 4px 0 0; }
+.sheet.capturing .car-nav { display: none; }

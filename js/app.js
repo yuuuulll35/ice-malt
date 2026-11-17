@@ -448,27 +448,73 @@ void main(){
       return blade(x - dx * z * 0.3, y - dy * z * 0.3, ang, z * 1.8, [[0.4, z * 0.42]]);
     };
 
-    const L0 = 62 + A[0].len * 2.4, L1 = L0 * (0.27 + A[1].len * 0.011), core = 10 + A[4].len * 0.8;
-    const nB = 2 + Math.round(A[2].len / 4.5), bLen = L0 * (0.18 + A[2].len * 0.014);
-    const z3 = 4 + A[3].len * 0.5, z5 = 2.6 + A[5].len * 0.3;
+    // the first way of loving decides the whole architecture of the crystal; the other five tune it
+    const TYPE = A[0].style, n1 = A[1].len / 10, n2 = A[2].len / 10, n3 = A[3].len / 10, n4 = A[4].len / 10, n5 = A[5].len / 10;
+    const bead = (x, y, r) => { faces += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="url(#${U('bead')})"/>`; };
+    const pt = (ang, r) => [Math.sin(ang) * r, -Math.cos(ang) * r];
+    let core = 8;
     for (let i = 0; i < 6; i++) {
       const ang = i * Math.PI / 3, ang2 = ang + Math.PI / 6;
-      // secondary arm between main arms
-      const t2 = blade(Math.sin(ang2) * core * 0.8, -Math.cos(ang2) * core * 0.8, ang2, L1 - core * 0.8, scaled(A[1].style, 0.75));
-      ornament(A[5].style, t2[0], t2[1], ang2, z5);
-      // side branches: parallel to the neighbouring arms, longest near the root
-      for (let j = 0; j < nB; j++) {
-        const t = 0.42 + j * (0.4 / Math.max(1, nB - 1)), r = L0 * t, len = bLen * (1 - j * 0.2);
-        const bx = Math.sin(ang) * r, by = -Math.cos(ang) * r;
-        for (const s of [-1, 1]) blade(bx, by, ang + s * Math.PI / 3, len, scaled(A[2].style, 0.62));
+      if (TYPE === 'feather') {
+        // fern dendrite: long thin arms thick with side branches that carry their own twigs
+        core = 7 + n4 * 3;
+        const L = 84 + n1 * 8, pairs = 6 + Math.round(n2 * 3);
+        for (let j = 0; j < pairs; j++) {
+          const t = 0.2 + j * (0.72 / pairs), [bx, by] = pt(ang, L * t), len = L * (0.3 - t * 0.24) * (0.8 + n2 * 0.4);
+          for (const sgn of [-1, 1]) {
+            const tip = blade(bx, by, ang + sgn * Math.PI / 3, len, [[0.1, 1.3], [0.5, 1.5]]);
+            if (len > 12) { const m = [(bx + tip[0]) / 2, (by + tip[1]) / 2]; blade(m[0], m[1], ang + sgn * Math.PI / 3 + sgn * -Math.PI / 3, len * 0.32, [[0.3, 0.7]]); blade(m[0], m[1], ang, len * 0.32, [[0.3, 0.7]]); }
+          }
+        }
+        blade(...pt(ang, core * 0.5), ang, L - core * 0.5, [[0.08, 1.8], [0.6, 2.2]]);
+        blade(...pt(ang2, core * 0.6), ang2, 16 + n5 * 10, [[0.3, 1.2]]);
+      } else if (TYPE === 'needle') {
+        // needle star: twelve clean spears, no branches, a small bright hub
+        core = 6 + n4 * 3;
+        const L = 90, L2 = 52 + n1 * 26;
+        blade(...pt(ang, core * 0.4), ang, L, [[0.1, 1.6], [0.7, 2.1], [0.94, 0.8]]);
+        blade(...pt(ang2, core * 0.4), ang2, L2, [[0.1, 1.2], [0.7, 1.5], [0.94, 0.6]]);
+        const ring = 30 + n3 * 18;
+        bead(...pt(ang, ring), 1.6 + n5 * 1.2);
+        bead(...pt(ang2, ring * 0.8), 1.1 + n5 * 0.8);
+      } else if (TYPE === 'plate') {
+        // sectored plate: a broad hexagonal plate, ridged into sectors, short broad stubs at the corners
+        core = 40 + n4 * 14;
+        const stub = 18 + n1 * 18, [cx, cy] = pt(ang, core * 0.9);
+        blade(cx, cy, ang, stub, [[0.05, 7], [0.55, 9], [0.85, 5]]);
+        plate(...pt(ang, core * 0.9 + stub + 4 + n3 * 3), 5 + n3 * 4, ang * 180 / Math.PI + 30, 0.45);
+        const [mx, my] = pt(ang2, core * 0.8);
+        blade(mx, my, ang2, 6 + n5 * 8, [[0.3, 3]]);
+      } else if (TYPE === 'spike') {
+        // dagger star: six wide, sharp blades with swept-back barbs
+        core = 9 + n4 * 4;
+        const L = 80 + n1 * 10;
+        blade(...pt(ang, core * 0.3), ang, L, [[0.05, 9], [0.22, 11], [0.6, 4]]);
+        const barbs = 1 + Math.round(n2 * 2);
+        for (let j = 0; j < barbs; j++) {
+          const [bx, by] = pt(ang, L * (0.48 + j * 0.16));
+          for (const sgn of [-1, 1]) blade(bx, by, ang + sgn * 0.62, 13 + n3 * 8 - j * 3, [[0.05, 2.6], [0.3, 3]]);
+        }
+        blade(...pt(ang2, core * 0.5), ang2, 30 + n5 * 18, [[0.05, 5], [0.25, 6]]);
+      } else {
+        // rimed star: rounded arms strung with frost beads, beads on every twig
+        core = 9 + n4 * 4;
+        const L = 76 + n1 * 10;
+        blade(...pt(ang, core * 0.5), ang, L - 6, [[0.06, 2.6], [0.8, 3]]);
+        const beads = 4 + Math.round(n2 * 3);
+        for (let j = 0; j < beads; j++) bead(...pt(ang, core + (L - core) * (j + 0.6) / beads), 1.8 + (j % 2 ? 0.4 : 1.4) + n3 * 0.8);
+        bead(...pt(ang, L), 5 + n3 * 2.5);
+        for (const t of [0.42, 0.66]) {
+          const [bx, by] = pt(ang, L * t);
+          for (const sgn of [-1, 1]) { const tip = blade(bx, by, ang + sgn * Math.PI / 3, L * (0.3 - t * 0.18), [[0.1, 1.6]]); bead(tip[0], tip[1], 2.6 + n5 * 1.4); }
+        }
+        const t2 = blade(...pt(ang2, core * 0.6), ang2, 22 + n5 * 10, [[0.1, 1.4]]); bead(t2[0], t2[1], 2.4);
       }
-      // main arm
-      const tip = blade(Math.sin(ang) * core * 0.6, -Math.cos(ang) * core * 0.6, ang, L0 - core * 0.6, PROF[A[0].style]);
-      ornament(A[3].style, tip[0], tip[1], ang, z3);
     }
-    plate(0, 0, core, 30, A[4].style === 'plate' || A[4].style === 'needle' ? 0.55 : 0);
-    if (A[4].style === 'dew') faces += `<circle r="${f(core * 0.36)}" fill="url(#${U('bead')})"/>`;
-    const k = core * 0.9;
+    plate(0, 0, core, TYPE === 'plate' ? 0 : 30, TYPE === 'plate' ? 0.55 : 0);
+    if (TYPE === 'plate') { plate(0, 0, core * 0.3, 30, 0.6); }
+    if (TYPE === 'dew') bead(0, 0, core * 0.45);
+    const k = Math.min(core, 13) * 0.9;
     const glint = `<path class="fglint" d="M0 ${f(-k)}Q${f(k * 0.1)} ${f(-k * 0.1)} ${f(k)} 0Q${f(k * 0.1)} ${f(k * 0.1)} 0 ${f(k)}Q${f(-k * 0.1)} ${f(k * 0.1)} ${f(-k)} 0Q${f(-k * 0.1)} ${f(-k * 0.1)} 0 ${f(-k)}Z" fill="#fff"/>`;
 
     const star = z => `<path d="M0 ${f(-z)}Q${f(z * 0.12)} ${f(-z * 0.12)} ${f(z)} 0Q${f(z * 0.12)} ${f(z * 0.12)} 0 ${f(z)}Q${f(-z * 0.12)} ${f(z * 0.12)} ${f(-z)} 0Q${f(-z * 0.12)} ${f(-z * 0.12)} 0 ${f(-z)}Z" fill="#fff"/>`;
@@ -822,6 +868,65 @@ void main(){
     ].filter(Boolean).join('\n');
   }
 
+  /* ───────── save the certificate as an image (same approach as love-dive) ───────── */
+  async function fontEmbedCSS(node) {
+    const used = new Set(); for (const ch of node.innerText) used.add(ch.codePointAt(0));
+    const hits = range => {
+      if (!range) return true;
+      return range.split(',').some(part => {
+        const p = part.trim().replace(/^U\+/i, ''); let lo, hi;
+        if (p.includes('?')) { lo = parseInt(p.replace(/\?/g, '0'), 16); hi = parseInt(p.replace(/\?/g, 'F'), 16); }
+        else if (p.includes('-')) { const [x, y] = p.split('-'); lo = parseInt(x, 16); hi = parseInt(y.replace(/^U\+/i, ''), 16); }
+        else lo = hi = parseInt(p, 16);
+        for (const cp of used) if (cp >= lo && cp <= hi) return true;
+        return false;
+      });
+    };
+    const rules = [];
+    for (const sheet of document.styleSheets) { let list; try { list = sheet.cssRules; } catch { continue; } for (const r of list) if (r instanceof CSSFontFaceRule && hits(r.style.getPropertyValue('unicode-range'))) rules.push(r); }
+    const css = await Promise.all(rules.map(async r => {
+      const m = r.style.getPropertyValue('src').match(/url\(["']?([^"')]+)["']?\)/); if (!m) return '';
+      try {
+        const blob = await (await fetch(new URL(m[1], r.parentStyleSheet && r.parentStyleSheet.href || location.href).href)).blob();
+        const data = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(blob); });
+        const st = r.style, range = st.getPropertyValue('unicode-range');
+        return `@font-face{font-family:${st.getPropertyValue('font-family')};font-style:${st.getPropertyValue('font-style') || 'normal'};font-weight:${st.getPropertyValue('font-weight') || '400'};src:url(${data});${range ? `unicode-range:${range};` : ''}}`;
+      } catch { return ''; }
+    }));
+    return css.join('\n');
+  }
+  async function saveSheetImage(node, filename) {
+    if (!window.htmlToImage) throw new Error('no renderer');
+    await (document.fonts && document.fonts.ready);
+    const skip = p => /^(height|block-size|min-height|min-block-size|grid-template-rows)$|^(animation|transition)/.test(p);
+    const props = Array.from(getComputedStyle(document.documentElement)).filter(p => !skip(p));
+    node.classList.add('capturing');
+    let card;
+    try {
+    card = await window.htmlToImage.toCanvas(node, {
+      includeStyleProperties: props, pixelRatio: 2, fontEmbedCSS: await fontEmbedCSS(node), cacheBust: false,
+      style: { boxShadow: 'none', margin: '0' },
+      filter: el => !(el instanceof HTMLElement && (el.dataset.noCapture !== undefined || el.classList.contains('car-nav')))
+    });
+    } finally { node.classList.remove('capturing'); }
+    const pad = Math.round(card.width * 0.08), W = card.width + pad * 2, H = card.height + pad * 2;
+    const out = document.createElement('canvas'); out.width = W; out.height = H;
+    const g = out.getContext('2d'), grad = g.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#f4f7ff'); grad.addColorStop(1, '#d6e3ff');
+    g.fillStyle = grad; g.fillRect(0, 0, W, H);
+    g.save(); g.shadowColor = 'rgba(20, 36, 110, .28)'; g.shadowBlur = pad * 0.5; g.shadowOffsetY = pad * 0.15; g.drawImage(card, pad, pad); g.restore();
+    const blob = await new Promise(ok => out.toBlob(ok, 'image/jpeg', 0.92));
+    if (!blob) throw new Error('render failed');
+    const file = new File([blob], filename, { type: 'image/jpeg' });
+    if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'ICE MELT' }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'shared'; }
+    }
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return 'downloaded';
+  }
+
   async function copy(text, ok) {
     try { await navigator.clipboard.writeText(text); }
     catch {
@@ -839,6 +944,7 @@ void main(){
     body.classList.remove('freezing');
     body.classList.remove('thawing', 'thawed');
     setMelt(0);
+    resetSteps();
     show('intro');
   }
 
@@ -933,6 +1039,15 @@ void main(){
     e.target._t = setTimeout(() => accept(i, e.target.value), 350);
   });
 
+  function resetSteps() {
+    answers.forEach((_, j) => {
+      answers[j] = null; store.set('icemelt2:a' + j, '');
+      const el = stepEl(j), ta = $('textarea', el), pre = $('.prompt', el), peek = $('[data-act="peek"]', el);
+      ta.value = ''; ta.hidden = true; pre.hidden = true; fail(j, '');
+      if (peek) { peek.setAttribute('aria-expanded', 'false'); peek.textContent = 'OOC 내용 보기'; }
+    });
+    paintSteps();
+  }
   const build = () => normalize({ ...answers[0], ...answers[1] });
   function begin(d) { store.set('icemelt2:last', JSON.stringify(d)); lastBtn.hidden = false; Sfx.init(); startPlay(d); }
 
@@ -955,5 +1070,15 @@ void main(){
   $('#newBtn').addEventListener('click', goHome);
   $('#homeBtn').addEventListener('click', goHome);
   $('#copyResult').addEventListener('click', () => copy(resultText(), '결과를 복사했어요.'));
+  $('#saveImg').addEventListener('click', async e => {
+    const btn = e.currentTarget, label = btn.textContent;
+    btn.disabled = true; btn.textContent = '만드는 중…';
+    try {
+      const how = await saveSheetImage($('#sheet'), 'ice-melt-certificate.jpg');
+      toast(how === 'shared' ? '이미지를 공유 창으로 보냈어요.' : '이미지를 저장했어요.');
+    } catch (err) {
+      toast('이미지를 만들지 못했어요. 잠시 후 다시 눌러 주세요.');
+    } finally { btn.disabled = false; btn.textContent = label; }
+  });
   addEventListener('resize', () => { if (body.dataset.screen === 'play') state.heartRect = (state.done ? ice : $('#ice .heart')).getBoundingClientRect(); });
 })();

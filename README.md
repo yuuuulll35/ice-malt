@@ -59,3 +59,7 @@ Google Fonts에서 불러오며 모두 SIL Open Font License 1.1을 따른다.
 - Cormorant Garamond — © The Cormorant Project Authors
 - IBM Plex Sans KR — © IBM Corp.
 - Martian Mono — © The Martian Mono Project Authors
+
+## 사용한 라이브러리
+
+- [html-to-image](https://github.com/bubkoo/html-to-image) 1.11.11 — MIT License, © 2017-2023 W.Y. 감정서를 이미지로 저장할 때 쓴다(`js/vendor/`).

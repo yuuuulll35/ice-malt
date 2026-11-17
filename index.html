@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#d6e4ff">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Noto+Serif+KR:wght@300;400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=Martian+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Noto+Serif+KR:wght@300;400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=Martian+Mono:wght@400;600&display=swap" crossorigin="anonymous">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-screen="intro">
@@ -173,6 +173,7 @@
 
     <div class="go result-actions">
       <button class="btn primary" id="againBtn" type="button">다시 깨기</button>
+      <button class="btn" id="saveImg" type="button">이미지로 저장</button>
       <button class="btn" id="copyResult" type="button">결과 텍스트 복사</button>
       <button class="btn" id="newBtn" type="button">새 진단</button>
     </div>
@@ -181,6 +182,7 @@
 
 <div class="toast" id="toast" role="status"></div>
 
+<script src="js/vendor/html-to-image.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 </body>
