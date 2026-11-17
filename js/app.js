@@ -633,6 +633,7 @@
     $('#mName').textContent = d.crystal.name;
     $('#mDesc').textContent = d.crystal.desc;
     $('#mFinal').textContent = d.final;
+    $('#mBy').textContent = d.npc;
     snowflake($('#emblem'), d, 'e1');
     later(() => { body.classList.add('thawing'); $('#emblem').classList.add('on'); Sfx.bloom(); }, reduce ? 50 : 650);
     later(() => { body.classList.add('thawed'); $('#toResult').focus({ preventScroll: true }); state.heartRect = ice.getBoundingClientRect(); }, reduce ? 100 : 1900);
