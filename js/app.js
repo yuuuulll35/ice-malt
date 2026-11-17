@@ -255,7 +255,7 @@ void main(){
   const clean = t => String(t || '').replace(/```[a-z]*/gi, '').replace(/\r/g, '');
   const isPrompt = t => /\[OOC\s*\d\/\d|잠시 역할극 중단|\[출력\]/.test(t);
   const unwrap = s => s.replace(/^[\s"'“”‘’「」『』]+|[\s"'“”‘’「」『』]+$/g, '');
-  const KEY = /^[-*•\s]*[\[【]?\s*(대상|해동|본심|결정|핵|가지|빛깔|얼린\s*이유|녹지\s*않는\s*이유|속마음)\s*(\d*)\s*[\]】]?\s*([.:：)]?)\s*(.*)$/;
+  const KEY = /^[-*•\s]*[\[【]?\s*(대상|얼음|해동|본심|결정|핵|가지|빛깔|얼린\s*이유|녹지\s*않는\s*이유|속마음)\s*(\d*)\s*[\]】]?\s*([.:：)]?)\s*(.*)$/;
   const field = (v, name) => { const m = v.match(new RegExp('[\\[(（]\\s*' + name + '\\s*[:：]\\s*([^\\])）]*)')); return m ? unwrap(m[1]) : ''; };
   const tail = (v, name) => { const m = v.match(new RegExp('[\\[(（]\\s*' + name + '\\s*[:：]\\s*([\\s\\S]*)$')); return m ? unwrap(m[1].replace(/[\])）]\s*$/, '')) : ''; };
 
@@ -278,6 +278,7 @@ void main(){
     const out = { balloons: [] };
     for (const { k, v } of rows(text)) {
       if (k === '대상') { const [a, b] = v.split(/\s*(?:\/|→|->)\s*/); out.npc = unwrap(a || ''); out.pc = unwrap(b || ''); }
+      else if (k === '얼음') { const n = +(v.match(/[1-5]/) || [0])[0]; if (n) out.ice = { level: n, why: parts(v).slice(1).join(' · ') }; }
       else if (k === '해동') {
         const body = tail(v, '속마음') || unwrap(v.replace(/[\[(（]\s*감정[^\])）]*[\])）]/, ''));
         if (body) out.balloons.push({ tag: field(v, '감정'), text: body });
@@ -311,7 +312,7 @@ void main(){
   }
   const PARSERS = [parse1, parse2];
   const SUMMARY = [
-    d => `${d.npc} → ${d.pc} · 속마음 ${d.balloons.length}개`,
+    d => `${d.npc} → ${d.pc} · ${d.ice ? ICE_LV[d.ice.level - 1].name + ' · ' : ''}속마음 ${d.balloons.length}개`,
     d => `${d.crystal.name} · 가지 ${d.crystal.arms.length}개`
   ];
 
@@ -328,6 +329,7 @@ void main(){
     while (arms.length < 6) arms.push({ name: '', len: 3 + (rng() * 5 | 0), style: keys[rng() * keys.length | 0], desc: '' });
     return {
       npc: str(d.npc, 40) || 'NPC', pc: str(d.pc, 40) || 'PC', balloons,
+      ice: { level: clamp(Math.round(+(d.ice && d.ice.level)) || 4, 1, 5), why: str(d.ice && d.ice.why, 300) },
       final: str(d.final, 300) || balloons[balloons.length - 1].text,
       crystal: { name: str(c.name, 60) || '이름 없는 결정', desc: str(c.desc, 400), core: str(c.core), arms,
         light: { name: str(light.name, 40), meaning: str(light.meaning, 300) }, frozen: str(c.frozen), lasting: str(c.lasting), truth: str(c.truth) }
@@ -431,6 +433,13 @@ void main(){
   }
 
   /* ───────── ice ───────── */
+  const ICE_LV = [
+    { name: '살얼음', d: [3, 2], m: [2, 3], kd: 0.25, km: 0.25, hp: [1, 2] },
+    { name: '얇은 얼음', d: [4, 2], m: [2, 4], kd: 0.35, km: 0.35, hp: [2, 3] },
+    { name: '단단한 얼음', d: [4, 3], m: [3, 4], kd: 0.5, km: 0.45, hp: [2, 4] },
+    { name: '두꺼운 얼음', d: [6, 4], m: [4, 5], kd: 1, km: 0.55, hp: [2, 4] },
+    { name: '만년설', d: [7, 5], m: [5, 6], kd: 0.9, km: 0.7, hp: [3, 5] }
+  ];
   function layout(cols, rows, k = 1) {
     const occ = Array.from({ length: rows }, () => Array(cols).fill(false)), cells = [], out = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push([c, r]);
@@ -450,9 +459,9 @@ void main(){
     return out;
   }
 
-  function buildIce(host, cols, rows, interactive) {
+  function buildIce(host, cols, rows, interactive, opt = {}) {
     host.textContent = '';
-    return layout(cols, rows, cols < 5 ? 0.55 : 1).map(b => {
+    return layout(cols, rows, opt.k !== undefined ? opt.k : (cols < 5 ? 0.55 : 1)).map(b => {
       const area = b.w * b.h;
       const el = document.createElement(interactive ? 'button' : 'div');
       el.className = 'blk';
@@ -460,7 +469,8 @@ void main(){
       el.style.cssText = `left:${b.c / cols * 100}%;top:${b.r / rows * 100}%;width:${b.w / cols * 100}%;height:${b.h / rows * 100}%`;
       el.innerHTML = '<span class="f"><svg viewBox="0 0 100 100" preserveAspectRatio="none"></svg></span>';
       host.appendChild(el);
-      const hp = area === 1 ? 2 + (Math.random() * 3 | 0) : area === 2 ? 5 : 8;
+      const [lo, hi] = opt.hp || [2, 4], base = lo + (Math.random() * (hi - lo + 1) | 0);
+      const hp = area === 1 ? base : area === 2 ? Math.round(hi * 1.25) : Math.round(hi * 2);
       return { el, svg: el.querySelector('svg'), face: el.firstChild, hp, max: hp, area };
     });
   }
@@ -514,8 +524,8 @@ void main(){
     $('#pNpc').textContent = data.npc; $('#pPc').textContent = data.pc;
     $('#barPair').textContent = `${data.npc} → ${data.pc}`;
     show('play');
-    const [cols, rows] = narrow.matches ? [4, 5] : [6, 4];
-    state.blocks = buildIce(blocksEl, cols, rows, true);
+    const L = ICE_LV[data.ice.level - 1], [cols, rows] = narrow.matches ? L.m : L.d;
+    state.blocks = buildIce(blocksEl, cols, rows, true, { k: narrow.matches ? L.km : L.kd, hp: L.hp });
     const total = state.blocks.length, n = data.balloons.length;
     state.thresholds = data.balloons.map((_, i) => clamp(Math.round((i + 0.6) * (total - 1) / n), 1, total - 1));
     state.blocks.forEach((b, i) => {
@@ -579,7 +589,7 @@ void main(){
 
   function paintHud() {
     const left = state.blocks.length - state.broken;
-    $('#hudCount').textContent = `ICE ${String(left).padStart(2, '0')} / ${String(state.blocks.length).padStart(2, '0')}`;
+    $('#hudCount').textContent = `${ICE_LV[state.data.ice.level - 1].name} · ICE ${String(left).padStart(2, '0')} / ${String(state.blocks.length).padStart(2, '0')}`;
   }
 
   function hit(b, cxp, cyp, rect, viaKey) {
@@ -596,6 +606,13 @@ void main(){
       chips(cxp, cyp, 4);
       Sfx.tap(dmg);
       if (b.hp === Math.floor(b.max / 2)) Sfx.crack();
+      return;
+    }
+    // the last piece holds until every inner voice has surfaced
+    if (state.broken === state.blocks.length - 1 && (state.queue.length || state.timer)) {
+      b.hp = 1;
+      b.el.classList.remove('jolt'); void b.el.offsetWidth; b.el.classList.add('jolt');
+      chips(cxp, cyp, 4); Sfx.tap(0.9);
       return;
     }
     // break
@@ -680,7 +697,8 @@ void main(){
     $('#rName').textContent = c.name; $('#rDesc').textContent = c.desc;
     $('#rLight').textContent = c.light.name ? `${c.light.name}${c.light.meaning ? ' · ' + c.light.meaning : ''}` : '';
     $('#rLight').parentElement.hidden = !c.light.name;
-    $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth;
+    $('#rIce').textContent = `${ICE_LV[d.ice.level - 1].name}${d.ice.why ? ' · ' + d.ice.why : ''}`;
+    $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth; $('#rTruthBy').textContent = d.npc;
     for (const id of ['rCore', 'rFrozen', 'rLasting', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
     $('.duo').hidden = !c.frozen && !c.lasting;
     const named = c.arms.map((a, i) => ({ ...a, i })).filter(a => a.name);
@@ -737,6 +755,7 @@ void main(){
       `결정: ${c.name}${c.desc ? ' — ' + c.desc : ''}`,
       c.light.name && `빛깔: ${c.light.name}${c.light.meaning ? ' — ' + c.light.meaning : ''}`,
       `유형: ${TYPES[c.arms[0].style][0]}`,
+      `처음 얼음: ${ICE_LV[d.ice.level - 1].name}${d.ice.why ? ' — ' + d.ice.why : ''}`,
       c.core && `처음, 마음이 맺힌 자리: ${c.core}`,
       ...c.arms.filter(a => a.name).map((a, i) => `마음 ${i + 1}: ${a.name}${a.desc ? ' — ' + a.desc : ''}`),
       c.frozen && `차마 녹이지 못했던 이유: ${c.frozen}`,
