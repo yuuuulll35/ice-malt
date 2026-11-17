@@ -153,7 +153,7 @@ main { min-height: 100dvh; padding-top: var(--bar-h); display: grid; }
 @keyframes gone { 0% { transform: scale(1.06); background: #fff; } 100% { transform: scale(.8); opacity: 0; } }
 
 .emblem { position: absolute; left: 50%; top: 50%; height: 90%; aspect-ratio: 1; transform: translate(-50%, -50%); overflow: visible; z-index: 3; pointer-events: none; opacity: 0;
-  filter: drop-shadow(0 0 8px color-mix(in oklab, var(--tint) 55%, transparent)); }
+  filter: drop-shadow(0 0 6px rgba(190, 210, 255, .55)); }
 .emblem.on { opacity: 1; }
 .emblem .ly { opacity: 0; }
 .emblem.on .ly { animation: ly-in 1.3s cubic-bezier(.2, .8, .2, 1) calc(var(--i) * .16s) both; }
@@ -232,6 +232,7 @@ textarea::placeholder { color: #9aa8dc; }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
 
 body.thawing .blocks { display: none; }
+body.thawing .deco { opacity: 0; transition: opacity .8s; }
 body.thawing .lane { visibility: hidden; }
 body.thawing .hud { opacity: 0; }
 body.thawing .heart { opacity: 0; }
