@@ -40,7 +40,7 @@ button:disabled { cursor: not-allowed; }
 .label { font: 400 10px/1.6 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
 
 /* ───────── paper ───────── */
-.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: linear-gradient(180deg, #f2f6ff, #dde8ff); }
+.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: linear-gradient(180deg, #fbfcff, #eef3ff); }
 .bg::before, .bg::after { content: ""; position: absolute; inset: -35%; will-change: transform; }
 .bg::before { background:
     radial-gradient(34% 30% at 26% 30%, #fff 0, transparent 70%),

@@ -203,13 +203,14 @@
     const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
     const FS = `precision mediump float;
 uniform vec2 r;uniform float t;
+#define NB 6.
 float h(float n){return fract(sin(n*127.1)*43758.5453);}
 vec3 bloom(vec3 col,vec2 p,float asp,float id,float per,vec3 tint,float k){
-  float q=t/per+h(id)*7.;
+  float q=t/per+(id-1.)/NB;
   float cyc=floor(q),f=fract(q);
   vec2 c=vec2((.08+.84*h(cyc*3.1+id))*asp,.08+.84*h(cyc*5.7+id*2.3));
   float e=1.-pow(1.-f,2.2);
-  float rad=mix(.05,.62,e)*max(1.,asp*.5);
+  float rad=mix(.05,.35,e)*max(1.,asp*.5);
   float a=smoothstep(0.,.12,f)*(1.-smoothstep(.35,1.,f));
   float d=length(p-c);
   return mix(col,tint,exp(-d*d/(rad*rad))*a*k);
@@ -218,12 +219,13 @@ void main(){
   vec2 uv=gl_FragCoord.xy/r;
   float asp=r.x/r.y;
   vec2 p=vec2(uv.x*asp,uv.y);
-  vec3 col=mix(vec3(.93,.95,1.),vec3(.99,.995,1.),uv.y);
-  col=bloom(col,p,asp,1.,15.,vec3(.62,.75,1.),.7);
-  col=bloom(col,p,asp,2.,19.,vec3(.74,.88,1.),.75);
-  col=bloom(col,p,asp,3.,17.,vec3(.55,.69,.99),.6);
-  col=bloom(col,p,asp,4.,23.,vec3(.80,.86,1.),.7);
-  col=bloom(col,p,asp,5.,21.,vec3(.68,.92,1.),.55);
+  vec3 col=vec3(.985,.99,1.);
+  col=bloom(col,p,asp,1.,18.,vec3(.66,.78,1.),.63);
+  col=bloom(col,p,asp,2.,18.,vec3(.76,.88,1.),.63);
+  col=bloom(col,p,asp,3.,18.,vec3(.62,.74,1.),.63);
+  col=bloom(col,p,asp,4.,18.,vec3(.72,.84,1.),.63);
+  col=bloom(col,p,asp,5.,18.,vec3(.72,.90,1.),.63);
+  col=bloom(col,p,asp,6.,18.,vec3(.68,.80,1.),.63);
   gl_FragColor=vec4(col,1.);
 }`;
     const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
