@@ -456,18 +456,20 @@ void main(){
     for (let i = 0; i < 6; i++) {
       const ang = i * Math.PI / 3, ang2 = ang + Math.PI / 6;
       if (TYPE === 'feather') {
-        // fern dendrite: long thin arms thick with side branches that carry their own twigs
-        core = 7 + n4 * 3;
-        const L = 84 + n1 * 8, pairs = 6 + Math.round(n2 * 3);
-        for (let j = 0; j < pairs; j++) {
-          const t = 0.2 + j * (0.72 / pairs), [bx, by] = pt(ang, L * t), len = L * (0.3 - t * 0.24) * (0.8 + n2 * 0.4);
-          for (const sgn of [-1, 1]) {
-            const tip = blade(bx, by, ang + sgn * Math.PI / 3, len, [[0.1, 1.3], [0.5, 1.5]]);
-            if (len > 12) { const m = [(bx + tip[0]) / 2, (by + tip[1]) / 2]; blade(m[0], m[1], ang + sgn * Math.PI / 3 + sgn * -Math.PI / 3, len * 0.32, [[0.3, 0.7]]); blade(m[0], m[1], ang, len * 0.32, [[0.3, 0.7]]); }
-          }
+        // classic stellar dendrite (the original design)
+        const L0 = 62 + A[0].len * 2.4, L1 = L0 * (0.27 + A[1].len * 0.011);
+        core = 10 + A[4].len * 0.8;
+        const nB = 2 + Math.round(A[2].len / 4.5), bLen = L0 * (0.18 + A[2].len * 0.014);
+        const z3 = 4 + A[3].len * 0.5, z5 = 2.6 + A[5].len * 0.3;
+        const t2 = blade(Math.sin(ang2) * core * 0.8, -Math.cos(ang2) * core * 0.8, ang2, L1 - core * 0.8, scaled(A[1].style, 0.75));
+        ornament(A[5].style, t2[0], t2[1], ang2, z5);
+        for (let j = 0; j < nB; j++) {
+          const t = 0.42 + j * (0.4 / Math.max(1, nB - 1)), r = L0 * t, len = bLen * (1 - j * 0.2);
+          const bx = Math.sin(ang) * r, by = -Math.cos(ang) * r;
+          for (const sg of [-1, 1]) blade(bx, by, ang + sg * Math.PI / 3, len, scaled(A[2].style, 0.62));
         }
-        blade(...pt(ang, core * 0.5), ang, L - core * 0.5, [[0.08, 1.8], [0.6, 2.2]]);
-        blade(...pt(ang2, core * 0.6), ang2, 16 + n5 * 10, [[0.3, 1.2]]);
+        const tip = blade(Math.sin(ang) * core * 0.6, -Math.cos(ang) * core * 0.6, ang, L0 - core * 0.6, PROF.feather);
+        ornament(A[3].style, tip[0], tip[1], ang, z3);
       } else if (TYPE === 'needle') {
         // needle star: twelve clean spears, no branches, a small bright hub
         core = 6 + n4 * 3;
@@ -478,13 +480,13 @@ void main(){
         bead(...pt(ang, ring), 1.6 + n5 * 1.2);
         bead(...pt(ang2, ring * 0.8), 1.1 + n5 * 0.8);
       } else if (TYPE === 'plate') {
-        // sectored plate: a broad hexagonal plate, ridged into sectors, short broad stubs at the corners
-        core = 40 + n4 * 14;
-        const stub = 18 + n1 * 18, [cx, cy] = pt(ang, core * 0.9);
-        blade(cx, cy, ang, stub, [[0.05, 7], [0.55, 9], [0.85, 5]]);
-        plate(...pt(ang, core * 0.9 + stub + 4 + n3 * 3), 5 + n3 * 4, ang * 180 / Math.PI + 30, 0.45);
-        const [mx, my] = pt(ang2, core * 0.8);
-        blade(mx, my, ang2, 6 + n5 * 8, [[0.3, 3]]);
+        // stellar plate: six broad faceted plate-arms that widen into a flat hexagon near the tip
+        core = 14 + n4 * 4;
+        const L = 78 + n1 * 10, wide = 7 + n2 * 3;
+        blade(...pt(ang, core * 0.7), ang, L - core * 0.7, [[0.05, wide * 0.55], [0.32, wide * 0.42], [0.55, wide], [0.78, wide * 0.9], [0.92, wide * 0.4]]);
+        plate(...pt(ang, L * 0.62), wide * 0.85, ang * 180 / Math.PI, 0.5);
+        plate(...pt(ang, L + 3 + n3 * 2), 3.5 + n3 * 3, ang * 180 / Math.PI + 30, 0.4);
+        blade(...pt(ang2, core * 0.8), ang2, 12 + n5 * 10, [[0.1, 3.4], [0.55, 4.2]]);
       } else if (TYPE === 'spike') {
         // dagger star: six wide, sharp blades with swept-back barbs
         core = 9 + n4 * 4;
@@ -497,23 +499,22 @@ void main(){
         }
         blade(...pt(ang2, core * 0.5), ang2, 30 + n5 * 18, [[0.05, 5], [0.25, 6]]);
       } else {
-        // rimed star: rounded arms strung with frost beads, beads on every twig
-        core = 9 + n4 * 4;
-        const L = 76 + n1 * 10;
-        blade(...pt(ang, core * 0.5), ang, L - 6, [[0.06, 2.6], [0.8, 3]]);
-        const beads = 4 + Math.round(n2 * 3);
-        for (let j = 0; j < beads; j++) bead(...pt(ang, core + (L - core) * (j + 0.6) / beads), 1.8 + (j % 2 ? 0.4 : 1.4) + n3 * 0.8);
-        bead(...pt(ang, L), 5 + n3 * 2.5);
-        for (const t of [0.42, 0.66]) {
+        // pearl star: slender arms, a few twigs that each end in a frost pearl, a large pearl at every tip
+        core = 9 + n4 * 3;
+        const L = 72 + n1 * 10;
+        const tip = blade(...pt(ang, core * 0.5), ang, L - core * 0.5, [[0.06, 1.8], [0.7, 2.2], [0.95, 0.8]]);
+        bead(tip[0], tip[1], 4.6 + n3 * 2.4);
+        for (const [t, k] of [[0.5, 0.3], [0.74, 0.2]]) {
           const [bx, by] = pt(ang, L * t);
-          for (const sgn of [-1, 1]) { const tip = blade(bx, by, ang + sgn * Math.PI / 3, L * (0.3 - t * 0.18), [[0.1, 1.6]]); bead(tip[0], tip[1], 2.6 + n5 * 1.4); }
+          for (const sg of [-1, 1]) { const e = blade(bx, by, ang + sg * Math.PI / 3, L * k * (0.8 + n2 * 0.4), [[0.1, 1.1], [0.8, 1.2]]); bead(e[0], e[1], 2 + n5 * 1.4); }
         }
-        const t2 = blade(...pt(ang2, core * 0.6), ang2, 22 + n5 * 10, [[0.1, 1.4]]); bead(t2[0], t2[1], 2.4);
+        bead(...pt(ang, L * 0.32), 2.2);
+        const t2 = blade(...pt(ang2, core * 0.6), ang2, 18 + n5 * 8, [[0.1, 1.2]]); bead(t2[0], t2[1], 2.6);
       }
     }
-    plate(0, 0, core, TYPE === 'plate' ? 0 : 30, TYPE === 'plate' ? 0.55 : 0);
-    if (TYPE === 'plate') { plate(0, 0, core * 0.3, 30, 0.6); }
-    if (TYPE === 'dew') bead(0, 0, core * 0.45);
+    plate(0, 0, core, 30, TYPE === 'plate' ? 0.55 : (TYPE === 'feather' && (A[4].style === 'plate' || A[4].style === 'needle')) ? 0.55 : 0);
+    if (TYPE === 'dew') bead(0, 0, core * 0.42);
+    if (TYPE === 'feather' && A[4].style === 'dew') bead(0, 0, core * 0.36);
     const k = Math.min(core, 13) * 0.9;
     const glint = `<path class="fglint" d="M0 ${f(-k)}Q${f(k * 0.1)} ${f(-k * 0.1)} ${f(k)} 0Q${f(k * 0.1)} ${f(k * 0.1)} 0 ${f(k)}Q${f(-k * 0.1)} ${f(k * 0.1)} ${f(-k)} 0Q${f(-k * 0.1)} ${f(-k * 0.1)} 0 ${f(-k)}Z" fill="#fff"/>`;
 
