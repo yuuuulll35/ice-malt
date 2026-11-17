@@ -709,3 +709,19 @@ body.thawing .ice .aurora { opacity: 1; }
 
 #rTruth::before, .truth-card #rTruth::before, .sc-quote::before { vertical-align: -.24em; margin-right: .08em; }
 #rTruth::after, .truth-card #rTruth::after, .sc-quote::after { vertical-align: -.62em; margin-left: .08em; }
+
+/* ───────── leave confirmation ───────── */
+body.paused *, body.paused *::before, body.paused *::after { animation-play-state: paused !important; }
+.leave { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px max(18px, env(safe-area-inset-right, 0px)) 24px max(18px, env(safe-area-inset-left, 0px));
+  background: rgba(10, 16, 52, .5); opacity: 0; transition: opacity .25s ease; }
+.leave.on { opacity: 1; }
+.leave-card { width: min(100%, 400px); padding: 32px 26px 24px; border-radius: 20px; background: #fbfcff; border: 1px solid rgba(37, 69, 207, .14);
+  box-shadow: 0 40px 80px -40px rgba(8, 14, 60, .7); text-align: center; transform: translateY(10px) scale(.98); transition: transform .3s cubic-bezier(.2, .9, .3, 1); }
+.leave.on .leave-card { transform: none; }
+.leave-card h2 { margin: 0 0 12px; font: 600 20px/1.4 var(--f-mincho); letter-spacing: .02em; color: #14206a; }
+.leave-card p { margin: 0 0 24px; font: 400 14px/1.85 var(--f-mincho); color: #4b578f; }
+.leave-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.leave-acts .btn { width: 100%; min-height: 46px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(37, 69, 207, .4); box-shadow: none; font-size: 14px; }
+.leave-acts .btn:not(.primary) { background: #fff; color: var(--ink); }
+.leave-acts .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.leave-acts .btn:active { transform: scale(.97); }

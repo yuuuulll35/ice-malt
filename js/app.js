@@ -204,6 +204,7 @@
     kick();
   }
   function loop(now) {
+    if (document.body.classList.contains('paused')) { last = now; raf = requestAnimationFrame(loop); return; }
     const dt = Math.min(0.033, (now - last) / 1000); last = now;
     cx.clearRect(0, 0, W, H);
     if (ambient && !reduce && state.heartRect && Math.random() < 0.05 + state.melt * 0.35) {
@@ -300,7 +301,7 @@ void main(){
     let lastDraw = 0;
     let ok = false;
     const draw = now => { lastDraw = now; gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); if (!ok && !gl.getError()) { ok = true; document.documentElement.classList.add('gl-bg'); } };
-    const frame = now => { if (!document.hidden && now - lastDraw > 33) draw(now); requestAnimationFrame(frame); };
+    const frame = now => { if (!document.hidden && !document.body.classList.contains('paused') && now - lastDraw > 33) draw(now); requestAnimationFrame(frame); };
     cv.addEventListener('webglcontextlost', e => { e.preventDefault(); document.documentElement.classList.remove('gl-bg'); ok = false; });
     size(); addEventListener('resize', size);
     requestAnimationFrame(frame);
@@ -1090,7 +1091,36 @@ void main(){
   $('#toResult').addEventListener('click', () => { Sfx.ui(); showResult(); });
   $('#againBtn').addEventListener('click', () => startPlay(state.data));
   $('#newBtn').addEventListener('click', goHome);
-  $('#homeBtn').addEventListener('click', goHome);
+  /* ───────── leave confirmation: dim, freeze everything, ask ───────── */
+  const leave = $('#leave');
+  let leaveFrom = null;
+  function openLeave() {
+    leaveFrom = document.activeElement;
+    body.classList.add('paused');
+    if (Sfx.ctx && Sfx.ctx.state === 'running') Sfx.ctx.suspend();
+    leave.hidden = false;
+    requestAnimationFrame(() => leave.classList.add('on'));
+    $('#leaveStay').focus();
+  }
+  function closeLeave(go) {
+    leave.classList.remove('on');
+    leave.hidden = true;
+    body.classList.remove('paused');
+    if (go) goHome();
+    else if (leaveFrom && leaveFrom.focus) leaveFrom.focus();
+    if (Sfx.ctx && !Sfx.muted) Sfx.ctx.resume();
+  }
+  $('#homeBtn').addEventListener('click', () => {
+    if (body.dataset.screen === 'play' || body.dataset.screen === 'result') openLeave(); else goHome();
+  });
+  $('#leaveStay').addEventListener('click', () => closeLeave(false));
+  $('#leaveGo').addEventListener('click', () => closeLeave(true));
+  leave.addEventListener('click', e => { if (e.target === leave) closeLeave(false); });
+  addEventListener('keydown', e => {
+    if (leave.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeLeave(false); }
+    else if (e.key === 'Tab') { const a = $('#leaveStay'), b = $('#leaveGo'); if (e.shiftKey && document.activeElement === a) { e.preventDefault(); b.focus(); } else if (!e.shiftKey && document.activeElement === b) { e.preventDefault(); a.focus(); } }
+  });
   $('#saveImg').addEventListener('click', async e => {
     const btn = e.currentTarget, label = btn.textContent;
     btn.disabled = true; btn.textContent = '만드는 중…';
