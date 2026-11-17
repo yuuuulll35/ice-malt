@@ -680,14 +680,30 @@ body.thawing .ice .aurora { opacity: 1; }
 .manifest blockquote::before, .manifest blockquote::after { font: 400 34px/1 var(--f-en); color: #9aaae0; }
 #rTruth::before, #rTruth::after, .sc-quote::before, .sc-quote::after { font-family: var(--f-en); font-size: 1.2em; line-height: 0; vertical-align: -.1em; }
 
-/* ───────── pull-quote marks: one large opening mark set above the line, nothing inline ───────── */
-#rTruth::before, .truth-card #rTruth::before, .sc-quote::before, .manifest blockquote::before {
-  content: "\201C"; display: block; position: static; margin: 0 auto; text-align: center; vertical-align: 0;
-  font: 400 96px/1 "Cormorant Garamond", "Bodoni Moda", Georgia, serif; height: .5em; overflow: visible; }
-#rTruth::after, .truth-card #rTruth::after, .sc-quote::after, .manifest blockquote::after { content: none; }
-.truth-card #rTruth::before { color: rgba(190, 206, 255, .55); margin-bottom: 18px; }
+/* ───────── quote marks: large serif marks that open and close the line where it starts and ends ───────── */
+#rTruth::before, .truth-card #rTruth::before, .sc-quote::before, #rTruth::after, .truth-card #rTruth::after, .sc-quote::after {
+  display: inline; position: static; height: auto; margin: 0; font: 400 2.6em/0 "Cormorant Garamond", "Bodoni Moda", Georgia, serif; vertical-align: -.42em; }
+#rTruth::before, .truth-card #rTruth::before, .sc-quote::before { content: "\201C"; margin-right: .06em; }
+#rTruth::after, .truth-card #rTruth::after, .sc-quote::after { content: "\201D"; margin-left: .06em; }
+.truth-card #rTruth::before, .truth-card #rTruth::after { color: rgba(190, 206, 255, .75); }
 .truth-card #rTruth { text-align: center; }
-.manifest blockquote { text-align: center; padding-top: 26px; }
-.manifest blockquote::before { color: #b4c2ef; margin-bottom: 14px; left: auto; top: auto; }
 .sc-quote { border-top: 0; padding-top: 4px; }
-.sc-quote::before { color: #b4c2ef; margin-bottom: 14px; }
+.sc-quote::before, .sc-quote::after { color: #a9b8ea; }
+.ta-acts { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+.ta-acts .btn { min-height: 40px; padding: 0 20px; font-size: 13.5px; }
+.intro-panel .link.reset { margin-left: auto; color: #8a4a6a; text-decoration-color: rgba(138, 74, 106, .3); }
+
+/* ───────── badge: letter-spacing adds space after the last digit, so balance it ───────── */
+.item > p.truth-no, .truth-no { letter-spacing: .24em; padding: 6px calc(12px - .24em) 6px 12px; }
+
+/* ───────── thought log as a timeline ───────── */
+.sh-log ol { display: block; position: relative; margin: 14px 0 6px; padding: 0 0 0 30px; counter-reset: none; max-width: 760px; }
+.sh-log ol::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 14px; width: 1px; background: linear-gradient(180deg, rgba(37, 69, 207, .1), rgba(37, 69, 207, .45)); }
+.sh-log li { position: relative; padding: 0 0 24px; font: inherit; }
+.sh-log li::before { content: ""; position: absolute; left: -27px; top: 7px; width: 9px; height: 9px; border-radius: 50%; background: #fff; border: 1.5px solid var(--ink); }
+.sh-log li:last-child { padding-bottom: 4px; }
+.sh-log li:last-child::before { background: var(--ink); box-shadow: 0 0 0 4px rgba(37, 69, 207, .14); }
+.sh-log .tl-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+.sh-log .tl-no { font: italic 400 14px/1 var(--f-en); color: #8a96c8; }
+.sh-log .tl-tag { font: 600 13.5px/1.4 var(--f-mincho); color: var(--ink); margin: 0; letter-spacing: .02em; }
+.sh-log .tl-text { margin: 0; font: 400 15px/1.9 var(--f-mincho); color: #1f2a66; }

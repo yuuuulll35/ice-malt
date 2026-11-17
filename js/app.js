@@ -828,7 +828,13 @@ void main(){
     named.forEach(() => dots.append(el('i')));
     paintCar();
     $('#rArms').closest('.item').hidden = !named.length;
-    fillList($('#rLog'), d.balloons, b => { const li = el('li'); if (b.tag) li.append(el('b', '', b.tag)); li.append(document.createTextNode(b.text)); return li; });
+    fillList($('#rLog'), d.balloons, (b, i) => {
+      const li = el('li'), head = el('p', 'tl-head');
+      head.append(el('span', 'tl-no', String(i + 1).padStart(2, '0')));
+      if (b.tag) head.append(el('b', 'tl-tag', b.tag));
+      li.append(head, el('p', 'tl-text', b.text));
+      return li;
+    });
     $('#rLogN').textContent = `(${d.balloons.length})`;
     snowflake($('#emblemR'), d, 'e2');
     snowflake($('#scEmblem'), d, 'e3');
@@ -973,6 +979,7 @@ void main(){
           <button class="btn" type="button" data-act="paste">답 붙여넣기</button>
         </div>
         <textarea id="answer${i + 1}" rows="5" spellcheck="false" aria-label="${st.title} 답 직접 입력" placeholder="${st.ph.replace(/\n/g, '&#10;')}" hidden></textarea>
+        <div class="ta-acts" hidden><button class="btn primary" type="button" data-act="confirm">입력 완료</button><button class="link" type="button" data-act="cancel">닫기</button></div>
         <div class="got" hidden><span class="got-text"></span><button class="link" type="button" data-act="redo">다시 넣기</button><button class="link" type="button" data-act="clear">지우기</button></div>
         <p class="error" role="alert" hidden></p>
         <div class="minor">
@@ -992,10 +999,15 @@ void main(){
       $('.got', el).hidden = !done;
       $('.acts', el).hidden = done;
       $('.minor', el).hidden = done;
-      if (done) { $('.got-text', el).textContent = SUMMARY[i](answers[i]); $('textarea', el).hidden = true; $('.prompt', el).hidden = true; }
+      if (done) { $('.got-text', el).textContent = SUMMARY[i](answers[i]); $('textarea', el).hidden = true; $('.ta-acts', el).hidden = true; $('.prompt', el).hidden = true; }
       el.querySelectorAll('.acts button, .minor button').forEach(b => { b.disabled = locked; });
     });
     startBtn.disabled = !(answers[0] && answers[1]);
+    paintReset();
+  }
+  function paintReset() {
+    const any = answers.some(Boolean) || [...stepsEl.querySelectorAll('textarea')].some(t => t.value.trim());
+    $('#resetBtn').hidden = !any;
   }
   function fail(i, msg) { const e = $('.error', stepEl(i)); e.textContent = msg; e.hidden = !msg; }
   function accept(i, text, quiet) {
@@ -1010,7 +1022,7 @@ void main(){
   }
   function openManual(i, msg) {
     const ta = $('textarea', stepEl(i));
-    ta.hidden = false; ta.focus();
+    ta.hidden = false; $('.ta-acts', stepEl(i)).hidden = false; ta.focus();
     if (msg) fail(i, msg);
   }
   stepsEl.addEventListener('click', async e => {
@@ -1025,29 +1037,34 @@ void main(){
       if (!text.trim()) return fail(i, '클립보드가 비어 있어요. 채팅에서 AI의 답을 복사한 뒤 다시 눌러 주세요.');
       accept(i, text);
     } else if (act === 'manual') openManual(i);
+    else if (act === 'confirm') {
+      const v = $('textarea', el).value;
+      if (!v.trim()) { fail(i, '붙여 넣은 내용이 없어요. AI가 쓴 답을 넣은 뒤 눌러 주세요.'); $('textarea', el).focus(); return; }
+      accept(i, v);
+    } else if (act === 'cancel') { $('textarea', el).hidden = true; $('.ta-acts', el).hidden = true; fail(i, ''); }
     else if (act === 'peek') {
       const pre = $('.prompt', el), open = pre.hidden;
       pre.textContent = window.ICE.PROMPTS[i]; pre.hidden = !open;
       btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'OOC 내용 접기' : 'OOC 내용 보기';
     } else if (act === 'redo' || act === 'clear') {
+      const keep = act === 'redo' ? (store.get('icemelt2:a' + i) || '') : '';
       for (let j = i; j < (act === 'clear' ? answers.length : i + 1); j++) { answers[j] = null; store.set('icemelt2:a' + j, ''); $('textarea', stepEl(j)).value = ''; fail(j, ''); }
       paintSteps();
-      if (act === 'redo') openManual(i);
+      if (act === 'redo') { $('textarea', el).value = keep; openManual(i); paintReset(); }
     }
   });
   stepsEl.addEventListener('input', e => {
     if (e.target.tagName !== 'TEXTAREA') return;
     const i = +e.target.closest('.step').dataset.i;
-    clearTimeout(e.target._t);
-    if (!e.target.value.trim()) return fail(i, '');
-    e.target._t = setTimeout(() => accept(i, e.target.value), 350);
+    fail(i, '');
+    paintReset();
   });
 
   function resetSteps() {
     answers.forEach((_, j) => {
       answers[j] = null; store.set('icemelt2:a' + j, '');
       const el = stepEl(j), ta = $('textarea', el), pre = $('.prompt', el), peek = $('[data-act="peek"]', el);
-      ta.value = ''; ta.hidden = true; pre.hidden = true; fail(j, '');
+      ta.value = ''; ta.hidden = true; $('.ta-acts', el).hidden = true; pre.hidden = true; fail(j, '');
       if (peek) { peek.setAttribute('aria-expanded', 'false'); peek.textContent = 'OOC 내용 보기'; }
     });
     paintSteps();
@@ -1063,6 +1080,7 @@ void main(){
 
   /* ───────── wiring ───────── */
   startBtn.addEventListener('click', () => { try { begin(build()); } catch (e) { toast(e.message); } });
+  $('#resetBtn').addEventListener('click', () => { resetSteps(); toast('입력한 내용을 모두 지웠어요.'); $('[data-act="copy"]', stepEl(0)).focus(); });
   $('#sampleBtn').addEventListener('click', () => { Sfx.init(); startPlay(normalize({ ...parse1(window.ICE.SAMPLE[0]), ...parse2(window.ICE.SAMPLE[1]) })); });
   lastBtn.addEventListener('click', () => {
     let d = null;
