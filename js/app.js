@@ -134,7 +134,7 @@
       const dx = x - hx, dy = y - hy, d = Math.hypot(dx, dy) || 1, v = rnd(120, 460);
       shard(x, y, dx / d * v + rnd(-60, 60), dy / d * v - rnd(80, 260), rnd(5, Math.min(22, rect.width / 4)), rnd(0.7, 1.3));
     }
-    if (!reduce) for (let i = 0; i < 5; i++) spark(rect.left + Math.random() * rect.width, rect.top + Math.random() * rect.height, rnd(-50, 50), rnd(-120, -30), rnd(5, 11), rnd(0.5, 1), i % 2 ? '#fff' : '#ffd55e');
+    if (!reduce) for (let i = 0; i < 5; i++) spark(rect.left + Math.random() * rect.width, rect.top + Math.random() * rect.height, rnd(-50, 50), rnd(-120, -30), rnd(5, 11), rnd(0.5, 1), i % 2 ? '#fff' : '#cfe0ff');
     kick();
   }
   function loop(now) {
@@ -142,7 +142,7 @@
     cx.clearRect(0, 0, W, H);
     if (ambient && !reduce && state.heartRect && Math.random() < 0.05 + state.melt * 0.35) {
       const r = state.heartRect;
-      P.push({ k: 2, x: r.left + r.width * rnd(0.2, 0.8), y: r.top + r.height * rnd(0.3, 0.8), vx: rnd(-14, 14), vy: rnd(-55, -20), s: rnd(1.5, 4), life: 2.4, max: 2.4, col: Math.random() < 0.5 ? state.hex : state.sub });
+      P.push({ k: 2, x: r.left + r.width * rnd(0.2, 0.8), y: r.top + r.height * rnd(0.3, 0.8), vx: rnd(-14, 14), vy: rnd(-55, -20), s: rnd(1.5, 4), life: 2.4, max: 2.4, col: Math.random() < 0.5 ? '#ffffff' : '#cfe0ff' });
     }
     for (let i = P.length - 1; i >= 0; i--) {
       const p = P[i];
@@ -304,7 +304,7 @@
 
   /* ───────── emblem: a small star chart drawn from the form's layers ───────── */
   function emblem(svg, data, uid) {
-    const { hex, sub } = data.color, rng = seeded(data.form.name + data.npc);
+    const hex = '#9dbcff', sub = '#ffffff', rng = seeded(data.form.name + data.npc);
     let layers = data.form.layers;
     if (layers.length < 2) {
       const pool = ['petal', 'wave', 'thread', 'drop', 'shard', 'star', 'dot', 'ray', 'ring'];
@@ -569,7 +569,7 @@
     if (!reduce) { fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); }
     for (let i = 0; i < (reduce ? 6 : 46); i++) {
       const a = rnd(0, 6.283), v = rnd(60, 520);
-      spark(mx, my, Math.cos(a) * v, Math.sin(a) * v, rnd(5, 16), rnd(0.8, 2), [d.color.hex, d.color.sub, '#fff'][i % 3]);
+      spark(mx, my, Math.cos(a) * v, Math.sin(a) * v, rnd(5, 16), rnd(0.8, 2), ['#ffffff', '#cfe0ff', '#9dbcff'][i % 3]);
     }
     kick();
     [...laneL.children, ...laneR.children].forEach(dismiss);
