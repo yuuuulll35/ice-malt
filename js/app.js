@@ -47,8 +47,8 @@
       if (!this.ok() || this.music) return;
       const c = this.ctx, bus = c.createGain(), lp = c.createBiquadFilter(), dl = c.createDelay(1), fb = c.createGain(), wet = c.createGain();
       lp.type = 'lowpass'; lp.frequency.value = 1500;
-      dl.delayTime.value = 0.42; fb.gain.value = 0.42; wet.gain.value = 0.5;
-      bus.gain.setValueAtTime(0.0001, c.currentTime); bus.gain.exponentialRampToValueAtTime(1, c.currentTime + 4);
+      dl.delayTime.value = 0.42; fb.gain.value = 0.42; wet.gain.value = 0.35;
+      bus.gain.setValueAtTime(0.0001, c.currentTime); bus.gain.exponentialRampToValueAtTime(1, c.currentTime + 0.8);
       bus.connect(lp); lp.connect(this.out); lp.connect(dl); dl.connect(fb).connect(dl); dl.connect(wet).connect(this.out);
       const CH = [[130.81, 196, 246.94, 293.66, 329.63], [110, 164.81, 196, 246.94, 261.63], [87.31, 130.81, 164.81, 220, 246.94], [82.41, 123.47, 146.83, 196, 220]];
       const BELL = [659.25, 783.99, 880, 987.77, 1174.66, 1318.51];
@@ -57,14 +57,14 @@
         for (const det of [-4, 4]) {
           const o = c.createOscillator(), g = c.createGain();
           o.type = 'triangle'; o.frequency.value = f; o.detune.value = det;
-          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 3); g.gain.setValueAtTime(v, t + dur - 3.5); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + (m.step > 1 ? 3 : 0.6)); g.gain.setValueAtTime(v, t + dur - 3.5); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
           o.connect(g).connect(bus); o.start(t); o.stop(t + dur + 0.1);
         }
       };
       const chord = () => {
         if (this.music !== m) return;
         const t = c.currentTime + 0.05;
-        CH[m.step++ % CH.length].forEach((f, i) => pad(t, f, 11, i ? 0.009 : 0.012));
+        CH[m.step++ % CH.length].forEach((f, i) => pad(t, f, 11, i ? 0.0028 : 0.0038));
         m.timers.push(setTimeout(chord, 9000));
       };
       const bell = () => {
@@ -72,11 +72,11 @@
         const t = c.currentTime + 0.02, f = BELL[Math.random() * BELL.length | 0];
         const o = c.createOscillator(), g = c.createGain();
         o.type = 'sine'; o.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.012, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.0035, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
         o.connect(g).connect(bus); o.start(t); o.stop(t + 3.3);
         m.timers.push(setTimeout(bell, 2400 + Math.random() * 3600));
       };
-      chord(); m.timers.push(setTimeout(bell, 1800));
+      chord(); m.timers.push(setTimeout(bell, 400));
     },
     stopMusic() {
       const m = this.music;
