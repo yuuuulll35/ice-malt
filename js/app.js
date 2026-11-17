@@ -745,7 +745,7 @@ void main(){
     $('#rName').textContent = c.name; $('#rDesc').textContent = c.desc;
     $('#rLightName').textContent = c.light.name; $('#rLightMean').textContent = c.light.meaning; $('#factLight').hidden = !c.light.name;
     $('#rIceName').textContent = ICE_LV[d.ice.level - 1].name; $('#rIceWhy').textContent = d.ice.why;
-    $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth; $('#rTruthBy').textContent = d.npc;
+    $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth;
     for (const id of ['rCore', 'rFrozen', 'rLasting', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
     $('.duo').hidden = !c.frozen && !c.lasting;
     const named = c.arms.map((a, i) => ({ ...a, i })).filter(a => a.name);

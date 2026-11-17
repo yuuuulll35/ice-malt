@@ -588,3 +588,12 @@ body.thawing .ice .aurora { opacity: 1; }
 .ring { will-change: transform; }
 .manifest blockquote { padding-bottom: 34px; }
 @media (prefers-reduced-motion: reduce) { #emblem.on, #emblemR { animation: none; } }
+
+/* ───────── 05: aurora back, no box behind the words ───────── */
+.item.truth .aurora { opacity: .95; }
+.item.truth .aurora i { -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 3px, rgba(0, 0, 0, .7) 3px 7px); mask-image: repeating-linear-gradient(90deg, #000 0 3px, rgba(0, 0, 0, .7) 3px 7px); filter: blur(20px); }
+.item.truth::after { background: radial-gradient(60% 45% at 50% 64%, rgba(8, 12, 46, .35), transparent 80%); }
+.truth-card { background: none !important; border: 0; padding: 0 clamp(4px, 2vw, 24px); }
+.truth-card #rTruth { text-align: center; text-wrap: balance; text-shadow: 0 1px 14px rgba(6, 10, 40, .7); }
+.truth-card #rTruth::before { content: "「"; color: #b9c8ff; margin-right: .2em; }
+.truth-card #rTruth::after { content: "」"; color: #b9c8ff; margin-left: .2em; }
