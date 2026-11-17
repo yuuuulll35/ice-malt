@@ -300,44 +300,64 @@
     };
   }
 
-  /* ───────── snowflake: six arms, each grown from one way of loving ───────── */
-  function snowflake(svg, data, uid, labels) {
-    const WHITE = '#ffffff', BLUE = '#9dbcff', f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
-    const ln = (w = 1.7) => `fill="none" stroke="${WHITE}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
-    const ice = `fill="url(#${U('f')})" stroke="${WHITE}" stroke-width="1.1" stroke-linejoin="round"`;
-    const hex = (cy, r) => { let d = ''; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; d += (i ? 'L' : 'M') + f(Math.sin(a) * r) + ' ' + f(cy - Math.cos(a) * r); } return d + 'Z'; };
-    const twig = (y, b, w) => { const dx = b * 0.866, dy = b * 0.5; return `<path d="M${f(-dx)} ${f(y - dy)}L0 ${f(y)}L${f(dx)} ${f(y - dy)}" ${ln(w)}/>`; };
-    const spark = (cy, sz) => { const k = sz * 0.14; return `<path transform="translate(0 ${f(cy)})" d="M0 ${f(-sz)}Q${f(k)} ${f(-k)} ${f(sz)} 0Q${f(k)} ${f(k)} 0 ${f(sz)}Q${f(-k)} ${f(k)} ${f(-sz)} 0Q${f(-k)} ${f(-k)} 0 ${f(-sz)}Z" fill="${WHITE}"/>`; };
-    const arm = a => {
-      const L = 38 + a.len * 4.6;
-      let g = `<path d="M0 -11L0 ${f(-L)}" ${ln(2)}/>`;
-      const at = t => -11 - (L - 11) * t;
-      if (a.style === 'feather') [0.22, 0.38, 0.54, 0.7, 0.84].forEach((t, i) => { g += twig(at(t), L * 0.3 * (1 - t * 0.7), i < 3 ? 1.6 : 1.2); });
-      else if (a.style === 'needle') { g += twig(at(0.42), L * 0.13, 1.5) + twig(at(0.72), L * 0.1, 1.3) + `<path d="${hex(-L, 3.2)}" fill="${WHITE}"/>`; }
-      else if (a.style === 'plate') { g += twig(at(0.28), L * 0.2, 1.5) + `<path d="${hex(at(0.6), L * 0.13)}" ${ice}/><path d="${hex(-L, L * 0.085)}" ${ice}/>`; }
-      else if (a.style === 'spike') { g += twig(at(0.32), L * 0.26, 1.6) + twig(at(0.58), L * 0.17, 1.4) + spark(-L, L * 0.13); }
-      else { const dot = (y, b, r) => `<circle cx="${f(-b * 0.866)}" cy="${f(y - b * 0.5)}" r="${r}" fill="${WHITE}"/><circle cx="${f(b * 0.866)}" cy="${f(y - b * 0.5)}" r="${r}" fill="${WHITE}"/>`;
-        g += twig(at(0.36), L * 0.22, 1.5) + dot(at(0.36), L * 0.22, 2.3) + twig(at(0.64), L * 0.15, 1.3) + dot(at(0.64), L * 0.15, 1.8) + `<circle cy="${f(-L)}" r="3.6" ${ice}/>`; }
-      return { g, L };
+  /* ───────── snowflake: six-fold crystal; each of the six ways becomes one tier of it ───────── */
+  const PARTS = ['큰 축', '사이 축', '곁가지', '끝 장식', '핵 둘레', '끝 구슬'];
+  function snowflake(svg, data, uid) {
+    const W = '#ffffff', f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
+    const A = data.crystal.arms, edge = `stroke="${W}" stroke-width=".55" stroke-linejoin="round"`;
+    const vein = (d, w = 0.5, o = 0.9) => `<path d="${d}" fill="none" stroke="${W}" stroke-width="${w}" stroke-linecap="round" opacity="${o}"/>`;
+    const kite = (y0, y1, w, p, fill = 'a') => { const ym = y0 + (y1 - y0) * p; return `<path d="M0 ${f(-y0)}L${f(w)} ${f(-ym)}L0 ${f(-y1)}L${f(-w)} ${f(-ym)}Z" fill="url(#${U(fill)})" ${edge}/>`; };
+    const hexP = (cy, r, rot = 0) => { let d = ''; for (let i = 0; i < 6; i++) { const t = (i * 60 + rot) * Math.PI / 180; d += (i ? 'L' : 'M') + f(Math.sin(t) * r) + ' ' + f(-cy - Math.cos(t) * r); } return d + 'Z'; };
+    const star4 = (cy, z) => { const k = z * 0.16; return `<path transform="translate(0 ${f(-cy)})" d="M0 ${f(-z)}Q${f(k)} ${f(-k)} ${f(z)} 0Q${f(k)} ${f(k)} 0 ${f(z)}Q${f(-k)} ${f(k)} ${f(-z)} 0Q${f(-k)} ${f(-k)} 0 ${f(-z)}Z" fill="${W}"/>`; };
+    const six = (g, off = 0) => { let o = ''; for (let i = 0; i < 6; i++) o += `<g transform="rotate(${i * 60 + off})">${g}</g>`; return o; };
+
+    // a faceted blade from radius y0 to y1, shaped by its grain
+    const blade = (st, y0, y1, k = 1) => {
+      const L = y1 - y0;
+      if (st === 'needle') return kite(y0, y1, 3.6 * k, 0.2) + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
+      if (st === 'plate') return kite(y0, y1, 9.5 * k, 0.56) + kite(y0 + L * 0.2, y1 - L * 0.16, 5 * k, 0.56, 'b') + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
+      if (st === 'spike') return kite(y0, y1, 4.6 * k, 0.14) + `<g transform="translate(0 ${f(-(y0 + L * 0.62))})"><g transform="rotate(38)">${kite(0, L * 0.3, 2.4 * k, 0.2, 'b')}</g><g transform="rotate(-38)">${kite(0, L * 0.3, 2.4 * k, 0.2, 'b')}</g></g>` + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
+      if (st === 'dew') return kite(y0, y1, 3 * k, 0.3) + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`) + `<circle cy="${f(-(y0 + L * 0.55))}" r="${f(3 * k)}" fill="url(#${U('b')})" ${edge}/>`;
+      let ribs = '';
+      const w = 6.4 * k, pm = 0.3;
+      for (let i = 1; i <= 7; i++) { const t = i / 8, y = y0 + L * t, half = (t < pm ? t / pm : (1 - t) / (1 - pm)) * w * 0.86; ribs += `M${f(-half)} ${f(-y + half * 0.7)}L0 ${f(-y)}L${f(half)} ${f(-y + half * 0.7)}`; }
+      return kite(y0, y1, w, pm) + vein(ribs, 0.45, 0.85) + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
     };
-    let flake = '', marks = '';
-    data.crystal.arms.forEach((a, i) => {
-      const { g, L } = arm(a), ang = i * 60;
-      flake += `<g transform="rotate(${ang})">${g}</g>`;
-      const r = Math.min(L + 9, 95), rad = ang * Math.PI / 180;
-      if (labels && a.name) marks += `<text x="${f(Math.sin(rad) * r)}" y="${f(-Math.cos(rad) * r + 2.6)}" text-anchor="middle">${i + 1}</text>`;
-    });
-    let seeds = '';
-    for (let i = 0; i < 6; i++) seeds += `<circle transform="rotate(${i * 60 + 30})" cy="-21" r="1.3" fill="${WHITE}"/>`;
+    // a small ornament centred at radius cy
+    const gem = (st, cy, z) => {
+      if (st === 'plate') return `<path d="${hexP(cy, z)}" fill="url(#${U('a')})" ${edge}/><path d="${hexP(cy, z * 0.5)}" fill="${W}" opacity=".9"/>`;
+      if (st === 'needle') return star4(cy, z * 1.25);
+      if (st === 'spike') return `<g transform="translate(0 ${f(-cy)})">${kite(-z * 0.9, z * 1.5, z * 0.55, 0.38)}</g>`;
+      if (st === 'dew') return `<circle cy="${f(-cy)}" r="${f(z * 0.8)}" fill="url(#${U('a')})" ${edge}/><circle cy="${f(-cy)}" r="${f(z * 0.3)}" fill="${W}"/>`;
+      return `<g transform="translate(0 ${f(-cy)})">${kite(-z * 1.1, z * 1.5, z * 0.8, 0.46)}${vein(`M0 ${f(z * 1.1)}L0 ${f(-z * 1.5)}M${f(-z * 0.5)} ${f(-z * 0.1)}L0 ${f(z * 0.35)}L${f(z * 0.5)} ${f(-z * 0.1)}`, 0.4)}</g>`;
+    };
+
+    const L1 = 50 + A[0].len * 3.6, L2 = 30 + A[1].len * 3.1, L3 = 28 + A[2].len * 3.3;
+    const z4 = 3.4 + A[3].len * 0.42, h5 = 9 + A[4].len * 0.85, z6 = 2.2 + A[5].len * 0.3;
+    const plate5 = A[4].style === 'dew' ? `<circle cy="${f(-h5 * 0.92)}" r="${f(h5 * 0.8)}" fill="url(#${U('b')})" ${edge}/>`
+      : A[4].style === 'spike' ? kite(2, h5 * 2, h5 * 0.62, 0.62, 'b')
+      : A[4].style === 'needle' ? kite(2, h5 * 2.1, h5 * 0.36, 0.5, 'b')
+      : `<path d="${hexP(h5 * 0.94, h5, 30)}" fill="url(#${U('b')})" ${edge}/>` + (A[4].style === 'feather' ? `<path d="${hexP(h5 * 0.94, h5 * 0.55, 30)}" fill="none" ${edge}/>` : '');
+    const tip1 = Math.min(L1, 96 - z4 * 1.6), tip2 = Math.min(L2, 92 - z6 * 1.5);
+    const flake =
+      six(`<g transform="rotate(21)">${blade(A[2].style, 15, L3, 0.82)}</g><g transform="rotate(-21)">${blade(A[2].style, 15, L3, 0.82)}</g>`) +
+      six(blade(A[1].style, 12, tip2, 0.8) + gem(A[5].style, tip2, z6), 30) +
+      six(blade(A[0].style, 8, tip1) + gem(A[3].style, tip1, z4)) +
+      six(plate5, 30) +
+      `<path d="${hexP(0, 6.5)}" fill="${W}"/>` + six(vein('M0 0L0 -13', 0.6));
+
+    const trails = [[-78, -40, 26, 3.2], [72, -66, 34, 4], [84, 30, 22, 2.6], [-64, 62, 30, 3], [-88, 8, 18, 2.2]]
+      .map(([x, y, t, z]) => `<g transform="translate(${x} ${y})"><path d="M0 0L0 ${-t}" stroke="url(#${U('t')})" stroke-width="${f(z * 0.5)}" stroke-linecap="round"/>${star4(0, z)}</g>`).join('');
     svg.innerHTML = `<defs>
-      <radialGradient id="${U('g')}"><stop offset="0" stop-color="${BLUE}" stop-opacity=".85"/><stop offset=".6" stop-color="${BLUE}" stop-opacity=".25"/><stop offset="1" stop-color="${BLUE}" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${U('f')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${BLUE}" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity=".95"/></linearGradient>
+      <radialGradient id="${U('g')}"><stop offset="0" stop-color="#9dbcff" stop-opacity=".7"/><stop offset=".6" stop-color="#9dbcff" stop-opacity=".2"/><stop offset="1" stop-color="#9dbcff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${U('a')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".78"/><stop offset="1" stop-color="#fff" stop-opacity=".97"/></linearGradient>
+      <linearGradient id="${U('b')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient>
+      <linearGradient id="${U('t')}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-30"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
       <filter id="${U('n')}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.2 -.75" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
+      <filter id="${U('fr')}" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 .42 0 0 0 0 .58 0 0 0 0 1 0 0 0 1.5 -.62" result="n"/><feComposite in="n" in2="SourceGraphic" operator="in" result="s"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="s"/></feMerge></filter>
     </defs>
-    <g class="ly" style="--i:0"><circle r="74" fill="url(#${U('g')})" opacity=".4"/><circle r="74" fill="url(#${U('g')})" filter="url(#${U('n')})"/></g>
-    <g class="ly" style="--i:1"><g class="${labels ? '' : 'rot'}" style="--dur:160s">${flake}${seeds}
-      <path d="${hex(0, 11.5)}" ${ice}/><path d="${hex(0, 5.5)}" fill="${WHITE}"/></g></g>
-    <g class="ly marks" style="--i:2">${marks}</g>`;
+    <g class="ly" style="--i:0"><circle r="80" fill="url(#${U('g')})" opacity=".35"/><circle r="80" fill="url(#${U('g')})" filter="url(#${U('n')})"/>${trails}</g>
+    <g class="ly" style="--i:1"><g class="rot" style="--dur:200s"><g filter="url(#${U('fr')})">${flake}</g></g></g>`;
   }
 
   /* ───────── ice ───────── */
@@ -559,7 +579,7 @@
     $('#mName').textContent = d.crystal.name;
     $('#mDesc').textContent = d.crystal.desc;
     $('#mFinal').textContent = d.final;
-    snowflake($('#emblem'), d, 'e1', false);
+    snowflake($('#emblem'), d, 'e1');
     later(() => { body.classList.add('thawing'); $('#emblem').classList.add('on'); Sfx.bloom(); }, reduce ? 50 : 650);
     later(() => { body.classList.add('thawed'); $('#toResult').focus({ preventScroll: true }); state.heartRect = ice.getBoundingClientRect(); }, reduce ? 100 : 1900);
   }
@@ -587,7 +607,7 @@
       const li = el('li');
       li.append(el('b', '', String(a.i + 1)));
       const box = el('div'), head = el('p', 'arm-name', a.name);
-      head.append(el('span', 'arm-style', STYLE_KO[a.style]));
+      head.append(el('span', 'arm-style', `${PARTS[a.i]} · ${STYLE_KO[a.style]}`));
       box.append(head);
       if (a.desc) box.append(el('p', '', a.desc));
       li.append(box);
@@ -596,7 +616,7 @@
     $('#rArms').closest('.item').hidden = !named.length;
     fillList($('#rLog'), d.balloons, b => { const li = el('li'); if (b.tag) li.append(el('b', '', b.tag)); li.append(document.createTextNode(b.text)); return li; });
     $('#rLogN').textContent = `(${d.balloons.length})`;
-    snowflake($('#emblemR'), d, 'e2', true);
+    snowflake($('#emblemR'), d, 'e2');
     setMelt(1);
     show('result');
   }

@@ -309,7 +309,7 @@ body.thawing .ice::before { opacity: 1; }
 .item .color-name { font-weight: 600; font-size: 18px; line-height: 1.4; color: #fff; }
 .item .form-name { font-weight: 600; font-size: 22px; line-height: 1.4; margin-bottom: 4px; color: #fff; }
 .emblem .marks text { font: italic 400 8px "Bodoni Moda", serif; fill: #fff; opacity: .9; }
-.window .emblem { height: 76%; }
+.window .emblem { height: 78%; }
 .light { display: flex; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: var(--rule); font-size: 14.5px !important; }
 .light span:first-child { flex: none; font: 400 10px/2.6 var(--f-mono); letter-spacing: .14em; color: var(--ink); }
 .arms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 26px; }
