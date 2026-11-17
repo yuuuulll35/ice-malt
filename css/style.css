@@ -245,8 +245,8 @@ textarea::placeholder { color: #9aa8dc; }
   background: linear-gradient(160deg, rgba(255, 255, 255, .78), rgba(244, 248, 255, .55)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border: 1px solid rgba(37, 69, 207, .16); border-radius: 2px; box-shadow: 0 30px 60px -44px rgba(20, 36, 110, .55); }
 .manifest blockquote::before, .manifest blockquote::after { position: absolute; font: 300 22px/1 var(--f-mincho); color: #8a9ad6; }
-.manifest blockquote::before { content: "「"; left: 16px; top: 14px; }
-.manifest blockquote::after { content: "」"; right: 16px; bottom: 14px; }
+.manifest blockquote::before { content: "\201C"; left: 16px; top: 14px; }
+.manifest blockquote::after { content: "\201D"; right: 16px; bottom: 14px; }
 .m-by { margin: 12px 2px 30px; text-align: right; font: italic 300 15px/1.4 var(--f-en); letter-spacing: .08em; color: var(--ink-soft); }
 .m-by::before { content: ""; display: inline-block; width: 26px; height: 1px; background: currentColor; vertical-align: middle; margin-right: 10px; opacity: .6; }
 .manifest .btn, .result-actions .btn { border-radius: 999px; border-width: 1px; box-shadow: none; padding: 0 30px; font-size: 14px; letter-spacing: .1em; }
@@ -329,8 +329,8 @@ body.thawing .ice .aurora { opacity: 1; }
 .truth { display: block; text-align: center; padding: 56px 0 44px; }
 .truth h3 { justify-items: center; margin-bottom: 26px; }
 .truth > p { max-width: 30em; margin: 0 auto; font: 300 clamp(18px, 1.9vw, 23px)/2.15 var(--f-mincho); letter-spacing: .03em; color: #14206a; }
-#rTruth::before { content: "「"; color: #8a9ad6; margin-right: .25em; }
-#rTruth::after { content: "」"; color: #8a9ad6; margin-left: .25em; }
+#rTruth::before { content: "\201C"; color: #8a9ad6; margin-right: .25em; }
+#rTruth::after { content: "\201D"; color: #8a9ad6; margin-left: .25em; }
 .sh-log { border-top: 1px solid rgba(37, 69, 207, .12); padding-top: 8px; }
 .sh-log summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 10px; font: 400 13px/1.5 var(--f-body); letter-spacing: .04em; color: var(--ink-soft); }
 .sh-log summary::before { content: "+"; font: 300 14px/1 var(--f-mono); width: 20px; height: 20px; border: 1px solid currentColor; border-radius: 50%; display: grid; place-items: center; flex: none; }
@@ -590,8 +590,8 @@ body.thawing .ice .aurora { opacity: 1; }
 /* ───────── 05: aurora back, no box behind the words ───────── */
 .truth-card { background: none !important; border: 0; padding: 0 clamp(4px, 2vw, 24px); }
 .truth-card #rTruth { text-align: center; text-wrap: balance; text-shadow: 0 1px 14px rgba(6, 10, 40, .7); }
-.truth-card #rTruth::before { content: "「"; color: #b9c8ff; margin-right: .2em; }
-.truth-card #rTruth::after { content: "」"; color: #b9c8ff; margin-left: .2em; }
+.truth-card #rTruth::before { content: "\201C"; color: #b9c8ff; margin-right: .2em; }
+.truth-card #rTruth::after { content: "\201D"; color: #b9c8ff; margin-left: .2em; }
 
 .bg { background-color: #f2f6ff; }
 .fact-k { display: grid; gap: 2px; font: 600 14px/1.4 var(--f-mincho); color: var(--ink); }
@@ -672,6 +672,10 @@ body.thawing .ice .aurora { opacity: 1; }
 .sc-facts span { font: 500 11px/1.4 var(--f-body); color: #6672a8; }
 .sc-facts b { font: 600 15px/1.4 var(--f-mincho); color: #14206a; }
 .sc-quote { margin: 0 4px 22px; padding-top: 20px; border-top: 1px solid rgba(37, 69, 207, .14); font: 400 16px/1.95 var(--f-mincho); color: #1b2660; text-wrap: balance; }
-.sc-quote::before { content: "「"; color: #8a9ad6; margin-right: .2em; }
-.sc-quote::after { content: "」"; color: #8a9ad6; margin-left: .2em; }
+.sc-quote::before { content: "\201C"; color: #8a9ad6; margin-right: .2em; }
+.sc-quote::after { content: "\201D"; color: #8a9ad6; margin-left: .2em; }
 .sc-foot { margin: 0; font: italic 400 13px/1 var(--f-en); letter-spacing: .06em; color: #8a9ad6; }
+.ph-panel h3 { align-items: center; }
+.ph-panel h3 b { padding-top: 0; line-height: 1; }
+.manifest blockquote::before, .manifest blockquote::after { font: 400 34px/1 var(--f-en); color: #9aaae0; }
+#rTruth::before, #rTruth::after, .sc-quote::before, .sc-quote::after { font-family: var(--f-en); font-size: 1.2em; line-height: 0; vertical-align: -.1em; }
