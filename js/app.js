@@ -39,8 +39,54 @@
       const d = buf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       this.noise = buf;
+      this.startMusic();
     },
     ok() { return !this.muted && this.ctx; },
+    music: null,
+    startMusic() {
+      if (!this.ok() || this.music) return;
+      const c = this.ctx, bus = c.createGain(), lp = c.createBiquadFilter(), dl = c.createDelay(1), fb = c.createGain(), wet = c.createGain();
+      lp.type = 'lowpass'; lp.frequency.value = 1500;
+      dl.delayTime.value = 0.42; fb.gain.value = 0.42; wet.gain.value = 0.5;
+      bus.gain.setValueAtTime(0.0001, c.currentTime); bus.gain.exponentialRampToValueAtTime(1, c.currentTime + 4);
+      bus.connect(lp); lp.connect(this.out); lp.connect(dl); dl.connect(fb).connect(dl); dl.connect(wet).connect(this.out);
+      const CH = [[130.81, 196, 246.94, 293.66, 329.63], [110, 164.81, 196, 246.94, 261.63], [87.31, 130.81, 164.81, 220, 246.94], [82.41, 123.47, 146.83, 196, 220]];
+      const BELL = [659.25, 783.99, 880, 987.77, 1174.66, 1318.51];
+      const m = this.music = { bus, step: 0, timers: [] };
+      const pad = (t, f, dur, v) => {
+        for (const det of [-4, 4]) {
+          const o = c.createOscillator(), g = c.createGain();
+          o.type = 'triangle'; o.frequency.value = f; o.detune.value = det;
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 3); g.gain.setValueAtTime(v, t + dur - 3.5); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.connect(g).connect(bus); o.start(t); o.stop(t + dur + 0.1);
+        }
+      };
+      const chord = () => {
+        if (this.music !== m) return;
+        const t = c.currentTime + 0.05;
+        CH[m.step++ % CH.length].forEach((f, i) => pad(t, f, 11, i ? 0.009 : 0.012));
+        m.timers.push(setTimeout(chord, 9000));
+      };
+      const bell = () => {
+        if (this.music !== m) return;
+        const t = c.currentTime + 0.02, f = BELL[Math.random() * BELL.length | 0];
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.012, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+        o.connect(g).connect(bus); o.start(t); o.stop(t + 3.3);
+        m.timers.push(setTimeout(bell, 2400 + Math.random() * 3600));
+      };
+      chord(); m.timers.push(setTimeout(bell, 1800));
+    },
+    stopMusic() {
+      const m = this.music;
+      if (!m) return;
+      this.music = null;
+      m.timers.forEach(clearTimeout);
+      const t = this.ctx.currentTime;
+      m.bus.gain.cancelScheduledValues(t); m.bus.gain.setValueAtTime(Math.max(0.0001, m.bus.gain.value), t); m.bus.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+      setTimeout(() => m.bus.disconnect(), 1400);
+    },
     grain(t, freq, q, dur, vol, type = 'bandpass') {
       const c = this.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
       s.buffer = this.noise; s.loop = true;
@@ -118,7 +164,9 @@
     Sfx.muted = !Sfx.muted;
     store.set('icemelt:mute', Sfx.muted ? '1' : '0');
     paintSound();
-    if (!Sfx.muted) { Sfx.init(); Sfx.ui(); }
+  document.addEventListener('visibilitychange', () => { if (!Sfx.ctx) return; if (document.hidden) Sfx.ctx.suspend(); else if (!Sfx.muted) Sfx.ctx.resume(); });
+  ['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => { if (!Sfx.muted) { Sfx.init(); Sfx.startMusic(); } }, { once: true, passive: true }));
+    if (Sfx.muted) Sfx.stopMusic(); else { Sfx.init(); Sfx.startMusic(); Sfx.ui(); }
   });
   paintSound();
 
@@ -238,11 +286,12 @@ void main(){
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const uR = gl.getUniformLocation(pr, 'r'), uT = gl.getUniformLocation(pr, 't');
-    const SCALE = 0.4;
+    const SCALE = innerWidth < 760 ? 0.22 : 0.3;
     const size = () => { const w = Math.max(1, Math.round(innerWidth * SCALE)), h = Math.max(1, Math.round(innerHeight * SCALE)); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); } };
     size(); addEventListener('resize', size);
     const t0 = performance.now() - 40000 * Math.random();
-    const frame = now => { if (!document.hidden) { gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); if (!ok && !gl.getError()) { ok = true; document.documentElement.classList.add('gl-bg'); } } requestAnimationFrame(frame); };
+    let lastDraw = 0;
+    const frame = now => { if (!document.hidden && now - lastDraw > 33) { lastDraw = now; gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); if (!ok && !gl.getError()) { ok = true; document.documentElement.classList.add('gl-bg'); } } requestAnimationFrame(frame); };
     let ok = false;
     requestAnimationFrame(frame);
   })();
@@ -421,14 +470,14 @@ void main(){
       <filter id="${U('blur')}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.2"/></filter>
     </defs>
     <g class="ly" style="--i:0"><circle r="96" fill="url(#${U('g')})"/></g>
-    <g class="ly" style="--i:1"><g class="rot" style="--dur:48s">
+    <g class="ly" style="--i:1"><g>
       <g id="${U('fl')}">${faces}<path d="${ridges}" fill="none" stroke="#fff" stroke-width=".5" stroke-linecap="round" opacity=".85"/></g>
     </g></g>
     <g class="ly" style="--i:2">${glint}</g>
     <g class="burst" aria-hidden="true">${burst}</g>`;
     const host = svg.querySelector(`#${U('fl')}`);
     const halo = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-    halo.setAttribute('href', `#${U('fl')}`); halo.setAttribute('filter', `url(#${U('blur')})`); halo.setAttribute('opacity', '.75');
+    halo.setAttribute('href', `#${U('fl')}`); halo.setAttribute('filter', `url(#${U('blur')})`); halo.setAttribute('opacity', '.6');
     host.parentNode.insertBefore(halo, host);
   }
 
@@ -678,7 +727,6 @@ void main(){
     $('#mName').textContent = d.crystal.name;
     $('#mDesc').textContent = d.crystal.desc;
     $('#mFinal').textContent = d.final;
-    $('#mBy').textContent = d.npc;
     snowflake($('#emblem'), d, 'e1');
     later(() => { body.classList.add('thawing'); $('#emblem').classList.add('on'); Sfx.bloom(); }, reduce ? 50 : 650);
     later(() => { body.classList.add('thawed'); $('#toResult').focus({ preventScroll: true }); state.heartRect = ice.getBoundingClientRect(); }, reduce ? 100 : 1900);

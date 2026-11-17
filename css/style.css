@@ -570,3 +570,21 @@ body.thawing .ice .aurora { opacity: 1; }
 @media (max-width: 560px) { .facts { grid-template-columns: 1fr; } }
 .manifest blockquote { margin-bottom: 30px; padding-bottom: 40px; }
 .manifest blockquote::after { bottom: 12px; }
+
+/* ───────── performance: no live backdrop blur over the moving background, composited layers only ───────── */
+.intro-panel, .sheet, .manifest blockquote, .truth-card, .result-actions .btn:not(.primary), .bubble { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.intro-panel { background: rgba(250, 252, 255, .94); }
+.sheet { background: rgba(250, 252, 255, .97); }
+.manifest blockquote { background: linear-gradient(180deg, #fff, #f1f5ff); }
+.truth-card { background: rgba(14, 22, 80, .55); }
+.result-actions .btn:not(.primary) { background: #fff; }
+.bg-grain { mix-blend-mode: normal; opacity: .1; transform: translateZ(0); }
+#bgfx { image-rendering: auto; transform: translateZ(0); }
+.emblem { will-change: transform; }
+#emblem.on, #emblemR { animation: emblem-spin 48s linear infinite; }
+@keyframes emblem-spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+.emblem .fglint { animation: none; }
+.aurora i { will-change: transform; -webkit-mask-image: none; mask-image: none; filter: blur(26px); }
+.ring { will-change: transform; }
+.manifest blockquote { padding-bottom: 34px; }
+@media (prefers-reduced-motion: reduce) { #emblem.on, #emblemR { animation: none; } }
