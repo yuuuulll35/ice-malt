@@ -521,7 +521,7 @@ body.thawing .ice .aurora { opacity: 1; }
 .intro-panel textarea, .intro-panel .prompt { border: 1px solid rgba(37, 69, 207, .2); border-radius: 10px; }
 .intro-panel .go { padding: 14px clamp(18px, 2.6vw, 28px) 16px; border-top: 0; }
 .subtitle { font-family: var(--f-mincho); font-weight: 500; }
-.lead { font: 400 15px/1.95 var(--f-mincho); color: #4b578f; }
+.lead { font: 400 13px/1.95 var(--f-mincho); color: #4b578f; }
 @media (max-width: 560px) { .step { grid-template-columns: auto minmax(0, 1fr); gap: 12px; } .acts { flex-wrap: nowrap; gap: 8px; } .acts .btn { flex: 1 1 0; padding: 0 12px; } .intro-panel .go .btn { flex: 1 1 0; } }
 
 /* ───────── one type system everywhere: bold mincho titles, mincho body, thin rules, 16px cards ───────── */
