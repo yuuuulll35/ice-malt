@@ -695,9 +695,8 @@ void main(){
     $('#rType').textContent = T[0]; $('#rTypeEn').textContent = T[1];
     $('#ringText').textContent = `For ${d.pc} only · Snow crystal certificate · ${c.name} · One of one · `.repeat(2);
     $('#rName').textContent = c.name; $('#rDesc').textContent = c.desc;
-    $('#rLight').textContent = c.light.name ? `${c.light.name}${c.light.meaning ? ' · ' + c.light.meaning : ''}` : '';
-    $('#rLight').parentElement.hidden = !c.light.name;
-    $('#rIce').textContent = `${ICE_LV[d.ice.level - 1].name}${d.ice.why ? ' · ' + d.ice.why : ''}`;
+    $('#rLightName').textContent = c.light.name; $('#rLightMean').textContent = c.light.meaning; $('#factLight').hidden = !c.light.name;
+    $('#rIceName').textContent = ICE_LV[d.ice.level - 1].name; $('#rIceWhy').textContent = d.ice.why;
     $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth; $('#rTruthBy').textContent = d.npc;
     for (const id of ['rCore', 'rFrozen', 'rLasting', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
     $('.duo').hidden = !c.frozen && !c.lasting;
