@@ -245,8 +245,8 @@ textarea::placeholder { color: #9aa8dc; }
   background: linear-gradient(160deg, rgba(255, 255, 255, .78), rgba(244, 248, 255, .55)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border: 1px solid rgba(37, 69, 207, .16); border-radius: 2px; box-shadow: 0 30px 60px -44px rgba(20, 36, 110, .55); }
 .manifest blockquote::before, .manifest blockquote::after { position: absolute; font: 300 22px/1 var(--f-mincho); color: #8a9ad6; }
-.manifest blockquote::before { content: "\201C"; left: 16px; top: 14px; }
-.manifest blockquote::after { content: "\201D"; right: 16px; bottom: 14px; }
+.manifest blockquote::before { content: "「"; left: 16px; top: 14px; }
+.manifest blockquote::after { content: "」"; right: 16px; bottom: 14px; }
 .m-by { margin: 12px 2px 30px; text-align: right; font: italic 300 15px/1.4 var(--f-en); letter-spacing: .08em; color: var(--ink-soft); }
 .m-by::before { content: ""; display: inline-block; width: 26px; height: 1px; background: currentColor; vertical-align: middle; margin-right: 10px; opacity: .6; }
 .manifest .btn, .result-actions .btn { border-radius: 999px; border-width: 1px; box-shadow: none; padding: 0 30px; font-size: 14px; letter-spacing: .1em; }
@@ -677,7 +677,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .sc-foot { margin: 0; font: italic 400 13px/1 var(--f-en); letter-spacing: .06em; color: #8a9ad6; }
 .ph-panel h3 { align-items: center; }
 .ph-panel h3 b { padding-top: 0; line-height: 1; }
-.manifest blockquote::before, .manifest blockquote::after { font: 400 34px/1 var(--f-en); color: #9aaae0; }
 #rTruth::before, #rTruth::after, .sc-quote::before, .sc-quote::after { font-family: var(--f-en); font-size: 1.2em; line-height: 0; vertical-align: -.1em; }
 
 /* ───────── quote marks: large serif marks that open and close the line where it starts and ends ───────── */
