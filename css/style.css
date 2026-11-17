@@ -313,7 +313,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .r-desc { font: 400 15px/2.05 var(--f-mincho); color: #4b578f; }
 .light { display: flex; gap: 16px; align-items: baseline; padding-top: 16px; border-top: 1px solid rgba(37, 69, 207, .14); font: 400 14px/1.95 var(--f-mincho); color: #2a3672; }
 .light span:first-child { flex: none; font: 400 10px/1.95 var(--f-mono); letter-spacing: .2em; color: var(--ink-soft); }
-.vtitle { writing-mode: vertical-rl; align-self: stretch; display: flex; align-items: center; padding-left: 18px; border-left: 1px solid rgba(37, 69, 207, .18); font: 300 15px/1 var(--f-mincho); letter-spacing: .7em; color: var(--ink); }
 .item { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 12px 40px; padding: 32px 0; border-top: 1px solid rgba(37, 69, 207, .12); min-width: 0; }
 .item h3 { display: grid; gap: 8px; align-content: start; font: 400 12px/1.7 var(--f-body); letter-spacing: .06em; color: var(--ink-soft); }
 .item h3 b { font: italic 300 30px/1 var(--f-en); color: var(--ink); }
@@ -399,3 +398,38 @@ body.thawing .ice .aurora { opacity: 1; }
 #emblem.on .burst .mote { animation: drift 2.4s ease-out calc(.25s + var(--d)) both; }
 @keyframes fly { 0% { opacity: 0; transform: translateY(-14px) scale(.2) rotate(0); } 18% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(calc(var(--far) * -1)) scale(1) rotate(90deg); } }
 @keyframes drift { 0% { opacity: 0; transform: translateY(-16px); } 25% { opacity: .9; } 100% { opacity: 0; transform: translateY(calc(var(--far) * -1)); } }
+
+/* ───────── report readability pass ───────── */
+.sheet { display: grid; gap: 14px; background: rgba(250, 252, 255, .9); }
+.sh-head { padding-bottom: 18px; }
+.sh-type { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.sh-type span { font: 400 10px/1.6 var(--f-mono); letter-spacing: .22em; color: var(--ink-soft); }
+.sh-type b { font: 500 15px/1.4 var(--f-mincho); letter-spacing: .06em; color: #14206a; }
+.sh-type i { font: italic 300 15px/1.4 var(--f-en); color: var(--ink); }
+.sh-hero { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 30px; padding: 30px 0 34px; }
+.sh-hero .window { width: min(100%, 360px); }
+.hero-text { justify-items: center; max-width: 36em; }
+.sh-pair { justify-content: center; }
+.light { justify-content: center; text-align: left; }
+.item, .duo .item, .duo .item + .item { display: block; padding: clamp(22px, 2.6vw, 30px) clamp(20px, 3vw, 34px); border: 1px solid rgba(37, 69, 207, .1); border-radius: 16px;
+  background: linear-gradient(180deg, #f3f7ff, #eaf1ff); }
+.duo { gap: 14px; border-top: 0; }
+.item h3 { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+.item h3 b { flex: none; font: italic 300 26px/1 var(--f-en); color: var(--ink); padding-top: 2px; }
+.item h3 span { display: grid; gap: 4px; font: 600 clamp(16px, 1.5vw, 18.5px)/1.45 var(--f-mincho); letter-spacing: .02em; color: #14206a; }
+.item h3 small { font: 400 12.5px/1.5 var(--f-body); letter-spacing: .02em; color: #6672a8; }
+.item > p { font: 400 16px/2 var(--f-mincho); color: #1b2660; }
+.arms { gap: 12px; }
+.arms li { padding: 16px 18px; border-radius: 12px; background: rgba(255, 255, 255, .85); border: 1px solid rgba(37, 69, 207, .08); }
+.arms .arm-name { font-weight: 600; }
+.arms li p + p { color: #3b4785; }
+.truth { text-align: center; padding: 40px clamp(20px, 5vw, 60px) 44px; background: linear-gradient(160deg, #e3ecff, #f6f9ff 55%, #e6f3ff); border-color: rgba(37, 69, 207, .16); }
+.truth h3 { justify-content: center; text-align: left; margin-bottom: 22px; }
+.truth > p { font-weight: 400; color: #14206a; }
+.sh-log { border: 1px solid rgba(37, 69, 207, .1); border-radius: 16px; padding: 6px clamp(20px, 3vw, 34px) 10px; background: rgba(243, 247, 255, .7); }
+.sh-log summary { color: #2a3672; font-family: var(--f-mincho); font-weight: 500; }
+@media (max-width: 860px), (orientation: portrait) {
+  .duo { grid-template-columns: 1fr; }
+  .duo .item + .item { border-top: 1px solid rgba(37, 69, 207, .1); padding: clamp(22px, 2.6vw, 30px) clamp(20px, 3vw, 34px); }
+  .item h3 { gap: 12px; }
+}
