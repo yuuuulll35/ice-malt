@@ -804,8 +804,9 @@ void main(){
     $('#rLightName').textContent = c.light.name; $('#rLightMean').textContent = c.light.meaning; $('#factLight').hidden = !c.light.name;
     $('#rIceName').textContent = ICE_LV[d.ice.level - 1].name; $('#rIceWhy').textContent = d.ice.why;
     $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth;
-    for (const id of ['rCore', 'rFrozen', 'rLasting', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
-    $('.duo').hidden = !c.frozen && !c.lasting;
+    for (const id of ['rCore', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
+    $('#phases').hidden = !c.frozen && !c.lasting;
+    setPhase('before');
     const named = c.arms.map((a, i) => ({ ...a, i })).filter(a => a.name);
     fillList($('#rArms'), named, a => {
       const li = el('li');
@@ -830,6 +831,11 @@ void main(){
     fillList($('#rLog'), d.balloons, b => { const li = el('li'); if (b.tag) li.append(el('b', '', b.tag)); li.append(document.createTextNode(b.text)); return li; });
     $('#rLogN').textContent = `(${d.balloons.length})`;
     snowflake($('#emblemR'), d, 'e2');
+    snowflake($('#scEmblem'), d, 'e3');
+    $('#scType').textContent = T[0]; $('#scTypeEn').textContent = T[1];
+    $('#scNpc').textContent = d.npc; $('#scPc').textContent = d.pc; $('#scName').textContent = c.name;
+    $('#scLight').textContent = c.light.name || '—'; $('#scIce').textContent = ICE_LV[d.ice.level - 1].name;
+    $('#scQuote').textContent = c.truth || d.final;
     setMelt(1);
     show('result');
     $('#rArms').scrollLeft = 0;
@@ -853,21 +859,12 @@ void main(){
     if (first) list.scrollBy({ left: (+btn.dataset.dir) * (first.getBoundingClientRect().width + 14), behavior: reduce ? 'auto' : 'smooth' });
   }));
 
-  function resultText() {
-    const d = state.data, c = d.crystal;
-    return [
-      `ICE MELT · 눈 결정 감정서 — ${d.npc} → ${d.pc}`,
-      `결정: ${c.name}${c.desc ? ' — ' + c.desc : ''}`,
-      c.light.name && `이 마음의 색: ${c.light.name}${c.light.meaning ? ' — ' + c.light.meaning : ''}`,
-      `유형: ${TYPES[c.arms[0].style][0]}`,
-      `처음 만났을 때의 경계심: ${ICE_LV[d.ice.level - 1].name}${d.ice.why ? ' — ' + d.ice.why : ''}`,
-      c.core && `처음, 마음이 맺힌 자리: ${c.core}`,
-      ...c.arms.filter(a => a.name).map((a, i) => `마음 ${i + 1}: ${a.name}${a.desc ? ' — ' + a.desc : ''}`),
-      c.frozen && `차마 녹이지 못했던 이유: ${c.frozen}`,
-      c.lasting && `끝내 녹지 않는 까닭: ${c.lasting}`,
-      c.truth && `얼음 아래 숨겨 둔 말: ${c.truth}`
-    ].filter(Boolean).join('\n');
+  function setPhase(p) {
+    const box = $('#phases'); box.dataset.phase = p;
+    box.querySelectorAll('[role="tab"]').forEach(t => t.setAttribute('aria-selected', String(t.dataset.p === p)));
   }
+  $('#phases').addEventListener('click', e => { const t = e.target.closest('[data-p]'); if (t) { setPhase(t.dataset.p); Sfx.ui(); } });
+  $('#phases .ph-panels').addEventListener('click', () => setPhase($('#phases').dataset.phase === 'before' ? 'after' : 'before'));
 
   /* ───────── save the certificate as an image (same approach as love-dive) ───────── */
   async function fontEmbedCSS(node) {
@@ -910,12 +907,12 @@ void main(){
       filter: el => !(el instanceof HTMLElement && (el.dataset.noCapture !== undefined || el.classList.contains('car-nav')))
     });
     } finally { node.classList.remove('capturing'); }
-    const pad = Math.round(card.width * 0.08), W = card.width + pad * 2, H = card.height + pad * 2;
+    const pad = Math.round(card.width * 0.1), W = card.width + pad * 2, H = Math.max(card.height + pad * 2, Math.round(W * 1.25));
     const out = document.createElement('canvas'); out.width = W; out.height = H;
     const g = out.getContext('2d'), grad = g.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#f4f7ff'); grad.addColorStop(1, '#d6e3ff');
     g.fillStyle = grad; g.fillRect(0, 0, W, H);
-    g.save(); g.shadowColor = 'rgba(20, 36, 110, .28)'; g.shadowBlur = pad * 0.5; g.shadowOffsetY = pad * 0.15; g.drawImage(card, pad, pad); g.restore();
+    g.save(); g.shadowColor = 'rgba(20, 36, 110, .28)'; g.shadowBlur = pad * 0.5; g.shadowOffsetY = pad * 0.15; g.drawImage(card, pad, Math.round((H - card.height) / 2)); g.restore();
     const blob = await new Promise(ok => out.toBlob(ok, 'image/jpeg', 0.92));
     if (!blob) throw new Error('render failed');
     // inside the claude.ai artifact viewer, files go through its downloads capability
@@ -1076,12 +1073,11 @@ void main(){
   $('#againBtn').addEventListener('click', () => startPlay(state.data));
   $('#newBtn').addEventListener('click', goHome);
   $('#homeBtn').addEventListener('click', goHome);
-  $('#copyResult').addEventListener('click', () => copy(resultText(), '결과를 복사했어요.'));
   $('#saveImg').addEventListener('click', async e => {
     const btn = e.currentTarget, label = btn.textContent;
     btn.disabled = true; btn.textContent = '만드는 중…';
     try {
-      const how = await saveSheetImage($('#sheet'), 'ice-melt-certificate.jpg');
+      const how = await saveSheetImage($('#shareCard'), 'ice-melt-certificate.jpg');
       if (how !== 'declined') toast(how === 'shared' ? '이미지를 공유 창으로 보냈어요.' : '이미지를 저장했어요.');
     } catch (err) {
       toast('이미지를 만들지 못했어요. 잠시 후 다시 눌러 주세요.');

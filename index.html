@@ -126,8 +126,8 @@
           <p class="r-desc" id="rDesc"></p>
         </div>
         <div class="facts">
-          <div class="fact" id="factLight"><p class="fact-k">이 마음의 색<small>이 사랑을 색으로 비춰 보면</small></p><p class="fact-name" id="rLightName"></p><p class="fact-v" id="rLightMean"></p></div>
-          <div class="fact"><p class="fact-k">처음 만났을 때의 경계심<small>마음을 열기 전, 얼마나 단단히 닫혀 있었는지</small></p><p class="fact-name" id="rIceName"></p><p class="fact-v" id="rIceWhy"></p></div>
+          <div class="fact" id="factLight"><p class="fact-k">이 마음의 색</p><p class="fact-name" id="rLightName"></p><p class="fact-v" id="rLightMean"></p></div>
+          <div class="fact"><p class="fact-k">처음 만났을 때의 경계심</p><p class="fact-name" id="rIceName"></p><p class="fact-v" id="rIceWhy"></p></div>
         </div>
       </div>
 
@@ -146,18 +146,25 @@
           </div>
         </div>
       </section>
-      <div class="duo">
-        <section class="item frozen">
-          <p class="phase">마음을 숨기던 때</p>
-          <h3><b>03</b><span>차마 녹이지 못했던 이유<small>좋아하는 마음을 숨기고 밀어냈던 까닭</small></span></h3>
-          <p id="rFrozen"></p>
-        </section>
-        <section class="item thawed">
-          <p class="phase">마음을 연 지금</p>
-          <h3><b>04</b><span>그럼에도, 끝내 녹지 않는 까닭<small>이 마음이 앞으로도 변하지 않을 이유</small></span></h3>
-          <p id="rLasting"></p>
-        </section>
-      </div>
+      <section class="item phases" id="phases" data-phase="before">
+        <div class="ph-toggle" role="tablist" aria-label="마음의 전과 후">
+          <i class="ph-thumb" aria-hidden="true"></i>
+          <button type="button" role="tab" data-p="before" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500Z"/></svg>마음을 숨기던 때</button>
+          <button type="button" role="tab" data-p="after" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.500M12 19.500V22M2 12h2.500M19.500 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800"/></svg>마음을 연 지금</button>
+        </div>
+        <div class="ph-panels">
+          <div class="ph-panel ph-before" role="tabpanel">
+            <p class="ph-label">마음을 숨기던 때</p>
+            <h3><b>03</b><span>차마 녹이지 못했던 이유</span></h3>
+            <p id="rFrozen"></p>
+          </div>
+          <div class="ph-panel ph-after" role="tabpanel">
+            <p class="ph-label">마음을 연 지금</p>
+            <h3><b>04</b><span>그럼에도, 끝내 녹지 않는 까닭</span></h3>
+            <p id="rLasting"></p>
+          </div>
+        </div>
+      </section>
       <section class="item truth">
         <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
         <div class="truth-head"><p class="truth-no">05</p><h3 class="truth-title">얼음 아래 숨겨 둔 말</h3><p class="truth-sub">끝내 직접 하지 못한 진심</p></div>
@@ -173,12 +180,28 @@
     <div class="go result-actions">
       <button class="btn primary" id="againBtn" type="button">다시 깨기</button>
       <button class="btn" id="saveImg" type="button">이미지로 저장</button>
-      <button class="btn" id="copyResult" type="button">결과 텍스트 복사</button>
       <button class="btn" id="newBtn" type="button">새 진단</button>
     </div>
   </section>
 </main>
 
+<div class="share-wrap" aria-hidden="true">
+  <div class="share-card" id="shareCard">
+    <div class="sc-top"><span class="sc-brand">ICE MELT</span><span class="sc-type"><b id="scType"></b><i id="scTypeEn"></i></span></div>
+    <div class="sc-window">
+      <div class="aurora"><i></i><i></i><i></i></div>
+      <svg class="emblem on" id="scEmblem" viewBox="-100 -100 200 200"></svg>
+    </div>
+    <p class="sc-pair">FROM <b id="scNpc"></b><i></i>TO <b id="scPc"></b></p>
+    <h2 class="sc-name" id="scName"></h2>
+    <div class="sc-facts">
+      <p><span>이 마음의 색</span><b id="scLight"></b></p>
+      <p><span>처음 만났을 때의 경계심</span><b id="scIce"></b></p>
+    </div>
+    <p class="sc-quote" id="scQuote"></p>
+    <p class="sc-foot">Snow Crystal Certificate · one of one</p>
+  </div>
+</div>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="js/vendor/html-to-image.js"></script>
