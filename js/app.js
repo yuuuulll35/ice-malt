@@ -302,56 +302,81 @@
     };
   }
 
-  /* ───────── emblem ───────── */
+  /* ───────── emblem: a small star chart drawn from the form's layers ───────── */
   function emblem(svg, data, uid) {
     const { hex, sub } = data.color, rng = seeded(data.form.name + data.npc);
     let layers = data.form.layers;
     if (layers.length < 2) {
-      const pool = ['petal', 'wave', 'thread', 'drop', 'shard', 'star', 'dot', 'ray'];
+      const pool = ['petal', 'wave', 'thread', 'drop', 'shard', 'star', 'dot', 'ray', 'ring'];
       layers = [{ shape: 'orb' }];
       for (let i = 0; i < 4; i++) layers.push({ shape: pool[rng() * pool.length | 0], count: 5 + (rng() * 8 | 0) });
       layers = layers.map(l => ({ count: 0, r: null, size: 0, ...l }));
     }
-    const cols = [hex, sub, '#ffffff'], n = layers.length, f = v => v.toFixed(2);
+    const SILVER = '#eef2ff', n = layers.length, f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
     const polar = (fn, steps, turns = 1) => {
       let d = '';
       for (let i = 0; i <= steps; i++) { const a = i / steps * Math.PI * 2 * turns, r = fn(a); d += (i ? 'L' : 'M') + f(Math.cos(a) * r) + ' ' + f(Math.sin(a) * r); }
       return d + 'Z';
     };
-    const around = (cnt, fn) => { let s = ''; for (let i = 0; i < cnt; i++) s += `<g transform="rotate(${f(i * 360 / cnt)})">${fn(i)}</g>`; return s; };
-    let out = `<defs><radialGradient id="${uid}g"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="${hex}"/><stop offset="1" stop-color="${hex}" stop-opacity="0"/></radialGradient></defs>`;
-    out += `<circle r="96" fill="url(#${uid}g)" opacity=".45"/>`;
+    const around = (cnt, fn) => { let o = ''; for (let i = 0; i < cnt; i++) o += `<g transform="rotate(${f(i * 360 / cnt)})">${fn(i)}</g>`; return o; };
+    const spark = (sz, t = 0.1) => { const k = sz * t; return `M0 ${f(-sz)}Q${f(k)} ${f(-k)} ${f(sz)} 0Q${f(k)} ${f(k)} 0 ${f(sz)}Q${f(-k)} ${f(k)} ${f(-sz)} 0Q${f(-k)} ${f(-k)} 0 ${f(-sz)}Z`; };
+    const star = (sz, col, extra = '') => `<path d="${spark(sz)}" fill="url(#${U('s')})" stroke="${col}" stroke-width=".5" stroke-linejoin="round" ${extra}/>`;
+    const star8 = (sz, col) => `<path d="${spark(sz * 0.5, 0.16)}" transform="rotate(45)" fill="${SILVER}" opacity=".85"/>${star(sz, col)}`;
+
+    let out = `<defs>
+      <radialGradient id="${U('g')}"><stop offset="0" stop-color="${hex}" stop-opacity=".95"/><stop offset=".55" stop-color="${hex}" stop-opacity=".4"/><stop offset="1" stop-color="${hex}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${U('g2')}"><stop offset="0" stop-color="${sub}" stop-opacity=".9"/><stop offset="1" stop-color="${sub}" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${U('s')}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#c9d4ff"/></linearGradient>
+      <linearGradient id="${U('p')}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-1"><stop offset="0" stop-color="${hex}" stop-opacity="0"/><stop offset="1" stop-color="${hex}" stop-opacity=".9"/></linearGradient>
+      <linearGradient id="${U('b')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sub}" stop-opacity=".05"/><stop offset="1" stop-color="${sub}" stop-opacity=".75"/></linearGradient>
+      <filter id="${U('n')}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" seed="${rng() * 99 | 0}" result="t"/><feColorMatrix in="t" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.2 -.75" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
+    </defs>`;
+    out += `<circle r="78" fill="url(#${U('g')})" opacity=".35"/><circle r="78" fill="url(#${U('g')})" filter="url(#${U('n')})"/>`;
+    let dust = '';
+    for (let i = 0; i < 16; i++) {
+      const a = rng() * 6.283, r = 30 + rng() * 66, x = Math.cos(a) * r, y = Math.sin(a) * r;
+      dust += i % 4 === 0 ? `<g transform="translate(${f(x)} ${f(y)})">${star(2 + rng() * 2.5, i % 8 ? hex : sub)}</g>` : `<circle cx="${f(x)}" cy="${f(y)}" r="${f(0.4 + rng() * 0.7)}" fill="${i % 3 ? SILVER : sub}" opacity="${f(0.5 + rng() * 0.5)}"/>`;
+    }
+    out += `<g class="ly" style="--i:0">${dust}</g>`;
+
     layers.forEach((l, i) => {
-      const c = cols[i % 3], c2 = cols[(i + 1) % 3];
-      const r = clamp(l.r === null ? (n === 1 ? 50 : 16 + i * 66 / (n - 1)) : l.r, 0, 92);
+      const c = i % 2 ? sub : hex;
+      const r = clamp(l.r === null ? (n === 1 ? 50 : 14 + i * 68 / (n - 1)) : l.r, 0, 92);
       const cnt = k => clamp(Math.round(l.count) || k, 1, 36);
-      const st = `fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"`;
+      const thin = `fill="none" stroke-linecap="round" stroke-linejoin="round"`;
       let g = '', spin = true;
       switch (l.shape) {
-        case 'orb': { const s = l.size || 20; spin = false;
-          g = `<circle r="${s * 1.7}" fill="url(#${uid}g)"/><circle r="${s * .42}" fill="#fff"/>`; break; }
-        case 'heart': { const s = (l.size || 18) / 50; spin = false;
-          g = `<path transform="scale(${f(s)}) translate(-50 -46)" d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z" fill="${c}" fill-opacity=".85" stroke="#fff" stroke-width="2.5"/>`; break; }
-        case 'gem': { const k = clamp(cnt(6), 3, 12), s = l.size || 24;
-          const poly = q => polar(() => q, k);
-          g = `<path d="${poly(s)}" fill="${c}" fill-opacity=".35" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><path d="${poly(s * .5)}" fill="#fff" fill-opacity=".35" stroke="#fff" stroke-width="1"/>`
-            + around(k, () => `<path d="M${f(s * .5)} 0L${f(s)} 0" stroke="#fff" stroke-width="1"/>`); break; }
-        case 'ring': g = `<circle r="${f(r)}" ${st}${l.count ? ` stroke-dasharray="${f(Math.PI * r / l.count)}"` : ''}/>`; break;
-        case 'wave': { const k = cnt(8), a = l.size || 5; g = `<path d="${polar(t => r + a * Math.sin(k * t), 180)}" ${st}/>`; break; }
-        case 'thread': { const k = cnt(5); g = `<path d="${polar(t => r * (.58 + .42 * Math.cos((k + .5) * t)), 360, 2)}" ${st} stroke-width="1"/>`; break; }
-        case 'petal': { const k = cnt(6), a = r * .22, w = l.size || Math.max(5, r * 2.2 / k);
-          g = around(k, () => `<path d="M0 ${f(-a)}C${f(w)} ${f(-a - (r - a) * .35)} ${f(w)} ${f(-r + (r - a) * .15)} 0 ${f(-r)}C${f(-w)} ${f(-r + (r - a) * .15)} ${f(-w)} ${f(-a - (r - a) * .35)} 0 ${f(-a)}Z" fill="${c}" fill-opacity=".5" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>`); break; }
-        case 'drop': { const k = cnt(6), s = l.size || 6;
-          g = around(k, () => `<path d="M0 ${f(-r - s * 1.7)}C${f(s)} ${f(-r - s * .2)} ${f(s)} ${f(-r + s)} 0 ${f(-r + s)}C${f(-s)} ${f(-r + s)} ${f(-s)} ${f(-r - s * .2)} 0 ${f(-r - s * 1.7)}Z" fill="${c}" fill-opacity=".45" stroke="${c}" stroke-width="1.2"/>`); break; }
-        case 'ray': { const k = cnt(12), s = l.size || 10;
-          g = around(k, j => `<path d="M0 ${f(-r)}L0 ${f(-r - (j % 2 ? s * .55 : s))}" ${st}/>`); break; }
-        case 'dot': { const k = cnt(10), s = l.size || 2.2; g = around(k, j => `<circle cy="${f(-r)}" r="${f(j % 2 ? s * .6 : s)}" fill="${j % 2 ? c2 : c}"/>`); break; }
-        case 'star': { const k = cnt(5), s = l.size || 6;
-          g = around(k, () => `<path transform="translate(0 ${f(-r)})" d="M0 ${-s}Q0 0 ${s} 0Q0 0 0 ${s}Q0 0 ${-s} 0Q0 0 0 ${-s}Z" fill="${c}"/>`); break; }
-        case 'shard': { const k = cnt(6), s = l.size || 12;
-          g = around(k, () => `<path d="M0 ${f(-r - s)}L${f(s * .28)} ${f(-r)}L0 ${f(-r + s * .7)}L${f(-s * .28)} ${f(-r)}Z" fill="${c}" fill-opacity=".4" stroke="#fff" stroke-width="1"/>`); break; }
+        case 'orb': { const sz = l.size || 20; spin = false;
+          g = `<circle r="${f(sz * 1.5)}" fill="url(#${U('g2')})" filter="url(#${U('n')})"/><circle r="${f(sz * 0.9)}" fill="url(#${U('g')})"/>${star8(sz * 1.6, hex)}<circle r="${f(sz * 0.12)}" fill="#fff"/>`; break; }
+        case 'heart': { const sz = (l.size || 20) / 50; spin = false;
+          g = `<g transform="scale(${f(sz)}) translate(-50 -46)"><path d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z" fill="url(#${U('g')})" stroke="${SILVER}" stroke-width="1.6"/><path d="M17 28c1-8 6-13 13-14" ${thin} stroke="#fff" stroke-width="2.4"/></g>`; break; }
+        case 'gem': { const k = clamp(cnt(6), 3, 12), sz = l.size || 24, poly = q => polar(() => q, k);
+          g = `<path d="${poly(sz)}" fill="${c}" fill-opacity=".22" stroke="${SILVER}" stroke-width=".7" stroke-linejoin="round"/><path d="${poly(sz * 0.52)}" fill="#fff" fill-opacity=".18" stroke="${SILVER}" stroke-width=".5"/>`
+            + around(k, () => `<path d="M${f(sz * 0.52)} 0L${f(sz)} 0" stroke="${SILVER}" stroke-width=".5"/>`); break; }
+        case 'ring': { const tilt = -24 + i * 37, k = l.count ? cnt(1) : 1;
+          let moons = '';
+          for (let j = 0; j < Math.min(k, 6); j++) { const a = j / Math.min(k, 6) * 6.283 + 0.6; moons += `<circle cx="${f(Math.cos(a) * r)}" cy="${f(Math.sin(a) * r * 0.36)}" r="${j ? 1.4 : 2.6}" fill="${j ? SILVER : c}" stroke="${SILVER}" stroke-width=".4"/>`; }
+          spin = false;
+          g = `<g transform="rotate(${tilt})"><ellipse rx="${f(r)}" ry="${f(r * 0.36)}" ${thin} stroke="${c}" stroke-width=".8"/><ellipse rx="${f(r)}" ry="${f(r * 0.36)}" ${thin} stroke="${SILVER}" stroke-width=".3" stroke-dasharray="1 3"/>${moons}</g>`; break; }
+        case 'wave': { const k = cnt(8), a = l.size || 4; g = `<path d="${polar(t => r + a * Math.sin(k * t), 240)}" ${thin} stroke="${SILVER}" stroke-width=".6" opacity=".9"/>`; break; }
+        case 'thread': { const k = cnt(5); g = `<path d="${polar(t => r * (0.56 + 0.44 * Math.cos((k + 0.5) * t)), 420, 2)}" ${thin} stroke="${c}" stroke-width=".6"/>`; break; }
+        case 'petal': { const k = cnt(6), a = r * 0.16, w = l.size || Math.max(5, r * 2.4 / k);
+          g = `<g>` + around(k, () => `<path d="M0 ${f(-a)}C${f(w)} ${f(-a - (r - a) * 0.35)} ${f(w)} ${f(-r + (r - a) * 0.12)} 0 ${f(-r)}C${f(-w)} ${f(-r + (r - a) * 0.12)} ${f(-w)} ${f(-a - (r - a) * 0.35)} 0 ${f(-a)}Z" fill="url(#${U('p')})" stroke="${SILVER}" stroke-width=".5" stroke-linejoin="round"/>`).replace(/y2="-1"/g, '') + `</g>`;
+          break; }
+        case 'drop': { const k = cnt(6), sz = l.size || 5.5;
+          g = around(k, j => { const q = j % 2 ? sz * 0.65 : sz; return `<g transform="translate(0 ${f(-r)})"><circle r="${f(q)}" fill="url(#${U('b')})" stroke="${c}" stroke-width=".6"/><path d="M${f(-q * 0.55)} ${f(-q * 0.2)}A${f(q * 0.6)} ${f(q * 0.6)} 0 0 1 ${f(-q * 0.1)} ${f(-q * 0.6)}" ${thin} stroke="#fff" stroke-width=".8"/></g>`; }); break; }
+        case 'ray': { const k = cnt(12), sz = l.size || 9;
+          g = `<circle r="${f(r)}" ${thin} stroke="${SILVER}" stroke-width=".3" opacity=".5"/>` + around(k, j => `<path d="M0 ${f(-r)}L0 ${f(-r - (j % 2 ? sz * 0.4 : sz))}" ${thin} stroke="${SILVER}" stroke-width="${j % 2 ? 0.4 : 0.7}"/>`); break; }
+        case 'dot': { const k = cnt(10), sz = l.size || 1.6, pts = [];
+          for (let j = 0; j < k; j++) { const a = j / k * 6.283 + (rng() - 0.5) * 0.3, q = r + (rng() - 0.5) * 14; pts.push([Math.cos(a) * q, Math.sin(a) * q, rng()]); }
+          g = `<path d="${pts.map((p2, j) => (j ? 'L' : 'M') + f(p2[0]) + ' ' + f(p2[1])).join('')}" ${thin} stroke="${SILVER}" stroke-width=".35" stroke-dasharray="1.5 2" opacity=".75"/>`
+            + pts.map(p2 => p2[2] > 0.7 ? `<g transform="translate(${f(p2[0])} ${f(p2[1])})">${star(sz * 3, c)}</g>` : `<circle cx="${f(p2[0])}" cy="${f(p2[1])}" r="${f(sz * (0.6 + p2[2]))}" fill="${p2[2] > 0.35 ? SILVER : c}"/>`).join(''); break; }
+        case 'star': { const k = cnt(5), sz = l.size || 8; g = around(k, j => `<g transform="translate(0 ${f(-r)})">${star(j % 2 ? sz * 0.55 : sz, c)}</g>`); break; }
+        case 'shard': { const k = cnt(6), sz = l.size || 13;
+          g = around(k, j => { const q = j % 2 ? sz * 0.6 : sz; return `<path d="M0 ${f(-r - q)}L${f(q * 0.2)} ${f(-r)}L0 ${f(-r + q * 0.6)}L${f(-q * 0.2)} ${f(-r)}Z" fill="${c}" fill-opacity=".3" stroke="${SILVER}" stroke-width=".5" stroke-linejoin="round"/>`; }); break; }
       }
-      out += `<g class="ly" style="--i:${i}"><g class="${spin ? 'rot' : ''}" style="--dur:${50 + i * 22}s;--dirn:${i % 2 ? 'reverse' : 'normal'}">${g}</g></g>`;
+      if (l.shape === 'petal') g = g.replace(new RegExp(`url\\(#${U('p')}\\)`, 'g'), `url(#${U('p' + i)})`), out += `<defs><linearGradient id="${U('p' + i)}" gradientUnits="userSpaceOnUse" x1="0" y1="${f(-r * 0.16)}" x2="0" y2="${f(-r)}"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity=".85"/></linearGradient></defs>`;
+      out += `<g class="ly" style="--i:${i + 1}"><g class="${spin ? 'rot' : ''}" style="--dur:${70 + i * 26}s;--dirn:${i % 2 ? 'reverse' : 'normal'}">${g}</g></g>`;
     });
     svg.innerHTML = out;
   }
@@ -585,6 +610,9 @@
     });
     $('#rLogN').textContent = `(${d.balloons.length})`;
     emblem($('#emblemR'), d, 'e2');
+    const code = seeded(d.npc + d.pc + d.form.name);
+    $('#rNo').textContent = 'No. IM-' + String(code() * 9000 + 1000 | 0);
+    $('#ringText').textContent = `For ${d.pc} only · Ice Melt Report · ${d.form.name} · ${d.color.name} · `.repeat(2);
     setMelt(1);
     show('result');
   }

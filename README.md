@@ -50,6 +50,7 @@ OOC는 답이 길어져 끊기지 않도록 두 번에 나눠 보낸다. ②는 
 Google Fonts에서 불러오며 모두 SIL Open Font License 1.1을 따른다.
 
 - Bagel Fat One — © The Bagel Fat Project Authors
+- Bodoni Moda — © The Bodoni Moda Project Authors
 - Hahmlet — © The Hahmlet Project Authors
 - IBM Plex Sans KR — © IBM Corp.
 - Martian Mono — © The Martian Mono Project Authors
