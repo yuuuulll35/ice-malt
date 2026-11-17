@@ -710,7 +710,7 @@ void main(){
       c.light.name && `빛깔: ${c.light.name}${c.light.meaning ? ' — ' + c.light.meaning : ''}`,
       `유형: ${TYPES[c.arms[0].style][0]}`,
       c.core && `처음, 마음이 맺힌 자리: ${c.core}`,
-      ...c.arms.filter(a => a.name).map((a, i) => `갈래 ${i + 1}: ${a.name}${a.desc ? ' — ' + a.desc : ''}`),
+      ...c.arms.filter(a => a.name).map((a, i) => `마음 ${i + 1}: ${a.name}${a.desc ? ' — ' + a.desc : ''}`),
       c.frozen && `차마 녹이지 못했던 이유: ${c.frozen}`,
       c.lasting && `끝내 녹지 않는 까닭: ${c.lasting}`,
       c.truth && `얼음 아래 숨겨 둔 말: ${c.truth}`
