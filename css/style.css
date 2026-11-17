@@ -110,11 +110,11 @@ main { min-height: 100dvh; padding-top: var(--bar-h); display: grid; }
 .deco .stars path { fill: color-mix(in oklab, var(--star) calc(var(--melt) * 100%), #fff); opacity: calc(.55 + var(--melt) * .45); transition: fill .6s; }
 
 .heart { position: absolute; left: 50%; top: 50%; height: 58%; aspect-ratio: 116 / 108; transform: translate(-50%, -50%); overflow: visible; z-index: 1;
-  filter: blur(calc((1 - var(--melt)) * 4px)) drop-shadow(0 0 calc(10px + var(--melt) * 26px) color-mix(in oklab, var(--heart) calc(var(--melt) * 100%), #fff));
+  filter: blur(calc((1 - var(--melt)) * 4px)) drop-shadow(0 0 calc(10px + var(--melt) * 26px) #fff);
   transition: opacity .9s ease, filter .6s; }
 .heart .h0 { stop-color: #fff; }
-.heart .h1 { stop-color: color-mix(in oklab, var(--heart) calc(var(--melt) * 100%), #e6efff); transition: stop-color .6s; }
-.heart .h2 { stop-color: color-mix(in oklab, color-mix(in oklab, var(--heart) 82%, #b0206a) calc(var(--melt) * 100%), #bcd2ff); transition: stop-color .6s; }
+.heart .h1 { stop-color: #fff; }
+.heart .h2 { stop-color: #dbe7ff; }
 .heart .hb { fill: url(#hg); stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; }
 .heart .hs { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .85; }
 .heart path { transform-origin: 50px 46px; animation: beat calc(2.4s - var(--melt) * 1.3s) ease-in-out infinite; }
