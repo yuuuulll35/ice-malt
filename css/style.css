@@ -380,3 +380,4 @@ body.thawing .ice::before { opacity: 1; }
   *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; }
   .emblem .ly { opacity: 1; }
 }
+.emblem .fglint { transform-box: fill-box; transform-origin: center; animation: twinkle 3.4s ease-in-out infinite; }

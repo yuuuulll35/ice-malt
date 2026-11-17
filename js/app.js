@@ -306,61 +306,95 @@
     };
   }
 
-  /* ───────── snowflake: six-fold crystal; each of the six ways becomes one tier of it ───────── */
-  const PARTS = ['큰 축', '사이 축', '곁가지', '끝 장식', '핵 둘레', '끝 구슬'];
+  /* ───────── snowflake: twelve-fold faceted crystal, lit from the upper left ───────── */
+  const PARTS = ['큰 축', '사이 축', '곁가지', '끝 장식', '중심 판', '사이 끝'];
   function snowflake(svg, data, uid) {
-    const W = '#ffffff', f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
-    const A = data.crystal.arms, edge = `stroke="${W}" stroke-width=".55" stroke-linejoin="round"`;
-    const vein = (d, w = 0.5, o = 0.9) => `<path d="${d}" fill="none" stroke="${W}" stroke-width="${w}" stroke-linecap="round" opacity="${o}"/>`;
-    const kite = (y0, y1, w, p, fill = 'a') => { const ym = y0 + (y1 - y0) * p; return `<path d="M0 ${f(-y0)}L${f(w)} ${f(-ym)}L0 ${f(-y1)}L${f(-w)} ${f(-ym)}Z" fill="url(#${U(fill)})" ${edge}/>`; };
-    const hexP = (cy, r, rot = 0) => { let d = ''; for (let i = 0; i < 6; i++) { const t = (i * 60 + rot) * Math.PI / 180; d += (i ? 'L' : 'M') + f(Math.sin(t) * r) + ' ' + f(-cy - Math.cos(t) * r); } return d + 'Z'; };
-    const star4 = (cy, z) => { const k = z * 0.16; return `<path transform="translate(0 ${f(-cy)})" d="M0 ${f(-z)}Q${f(k)} ${f(-k)} ${f(z)} 0Q${f(k)} ${f(k)} 0 ${f(z)}Q${f(-k)} ${f(k)} ${f(-z)} 0Q${f(-k)} ${f(-k)} 0 ${f(-z)}Z" fill="${W}"/>`; };
-    const six = (g, off = 0) => { let o = ''; for (let i = 0; i < 6; i++) o += `<g transform="rotate(${i * 60 + off})">${g}</g>`; return o; };
-
-    // a faceted blade from radius y0 to y1, shaped by its grain
-    const blade = (st, y0, y1, k = 1) => {
-      const L = y1 - y0;
-      if (st === 'needle') return kite(y0, y1, 3.6 * k, 0.2) + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
-      if (st === 'plate') return kite(y0, y1, 9.5 * k, 0.56) + kite(y0 + L * 0.2, y1 - L * 0.16, 5 * k, 0.56, 'b') + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
-      if (st === 'spike') return kite(y0, y1, 4.6 * k, 0.14) + `<g transform="translate(0 ${f(-(y0 + L * 0.62))})"><g transform="rotate(38)">${kite(0, L * 0.3, 2.4 * k, 0.2, 'b')}</g><g transform="rotate(-38)">${kite(0, L * 0.3, 2.4 * k, 0.2, 'b')}</g></g>` + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
-      if (st === 'dew') return kite(y0, y1, 3 * k, 0.3) + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`) + `<circle cy="${f(-(y0 + L * 0.55))}" r="${f(3 * k)}" fill="url(#${U('b')})" ${edge}/>`;
-      let ribs = '';
-      const w = 6.4 * k, pm = 0.3;
-      for (let i = 1; i <= 7; i++) { const t = i / 8, y = y0 + L * t, half = (t < pm ? t / pm : (1 - t) / (1 - pm)) * w * 0.86; ribs += `M${f(-half)} ${f(-y + half * 0.7)}L0 ${f(-y)}L${f(half)} ${f(-y + half * 0.7)}`; }
-      return kite(y0, y1, w, pm) + vein(ribs, 0.45, 0.85) + vein(`M0 ${f(-y0)}L0 ${f(-y1)}`);
+    const A = data.crystal.arms, f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
+    const LX = -0.55, LY = -0.83;
+    const LO = [118, 146, 226], MID = [208, 222, 255], HI = [255, 255, 255];
+    const tone = (nx, ny) => {
+      const k = (nx * LX + ny * LY + 1) / 2;
+      const c = k < 0.5 ? LO.map((v, i) => v + (MID[i] - v) * k * 2) : MID.map((v, i) => v + (HI[i] - v) * (k - 0.5) * 2);
+      return `rgb(${c.map(Math.round).join(',')})`;
     };
-    // a small ornament centred at radius cy
-    const gem = (st, cy, z) => {
-      if (st === 'plate') return `<path d="${hexP(cy, z)}" fill="url(#${U('a')})" ${edge}/><path d="${hexP(cy, z * 0.5)}" fill="${W}" opacity=".9"/>`;
-      if (st === 'needle') return star4(cy, z * 1.25);
-      if (st === 'spike') return `<g transform="translate(0 ${f(-cy)})">${kite(-z * 0.9, z * 1.5, z * 0.55, 0.38)}</g>`;
-      if (st === 'dew') return `<circle cy="${f(-cy)}" r="${f(z * 0.8)}" fill="url(#${U('a')})" ${edge}/><circle cy="${f(-cy)}" r="${f(z * 0.3)}" fill="${W}"/>`;
-      return `<g transform="translate(0 ${f(-cy)})">${kite(-z * 1.1, z * 1.5, z * 0.8, 0.46)}${vein(`M0 ${f(z * 1.1)}L0 ${f(-z * 1.5)}M${f(-z * 0.5)} ${f(-z * 0.1)}L0 ${f(z * 0.35)}L${f(z * 0.5)} ${f(-z * 0.1)}`, 0.4)}</g>`;
+    const poly = pts => 'M' + pts.map(p => f(p[0]) + ' ' + f(p[1])).join('L') + 'Z';
+    let faces = '', ridges = '';
+    const facet = (pts, nx, ny) => { faces += `<path d="${poly(pts)}" fill="${tone(nx, ny)}"/>`; };
+    const ridge = (a, b, w = 0.45) => { ridges += `M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}`; };
+
+    // a two-faced blade from (bx,by) toward angle ang (rad, 0 = up), half-width profile [[t,w]...]
+    const blade = (bx, by, ang, L, prof) => {
+      const dx = Math.sin(ang), dy = -Math.cos(ang), px = -dy, py = dx;
+      const at = (t, w, s) => [bx + dx * L * t + px * w * s, by + dy * L * t + py * w * s];
+      const tip = [bx + dx * L, by + dy * L];
+      for (const s of [-1, 1]) facet([[bx, by], ...prof.map(([t, w]) => at(t, w, s)), tip], px * s, py * s);
+      ridge([bx, by], tip);
+      return tip;
+    };
+    // a flat hexagonal plate split into six lit sectors
+    const plate = (cx, cy, r, rot = 0, ring = 0) => {
+      const v = i => { const a = (i * 60 + rot) * Math.PI / 180; return [cx + Math.sin(a) * r, cy - Math.cos(a) * r]; };
+      for (let i = 0; i < 6; i++) {
+        const a = v(i), b = v(i + 1), mx = (a[0] + b[0]) / 2 - cx, my = (a[1] + b[1]) / 2 - cy, m = Math.hypot(mx, my) || 1;
+        facet([[cx, cy], a, b], mx / m, my / m);
+        ridge([cx, cy], a);
+      }
+      if (ring) { const w = i => { const a = (i * 60 + rot) * Math.PI / 180; return [cx + Math.sin(a) * r * ring, cy - Math.cos(a) * r * ring]; }; for (let i = 0; i < 6; i++) ridge(w(i), w(i + 1)); }
+    };
+    const PROF = {
+      needle: [[0.08, 1.5], [0.82, 1.9]],
+      feather: [[0.06, 2.4], [0.5, 3.3]],
+      plate: [[0.05, 2.6], [0.48, 6.4], [0.78, 4.6]],
+      spike: [[0.05, 3.6], [0.2, 4.2]],
+      dew: [[0.06, 2], [0.7, 2.8], [0.9, 1.6]]
+    };
+    const scaled = (st, k) => PROF[st].map(([t, w]) => [t, w * k]);
+    const ornament = (st, x, y, ang, z) => {
+      const dx = Math.sin(ang), dy = -Math.cos(ang);
+      if (st === 'plate') return plate(x + dx * z * 0.75, y + dy * z * 0.75, z, ang * 180 / Math.PI + 30, 0.45);
+      if (st === 'spike') return blade(x - dx * z * 0.6, y - dy * z * 0.6, ang, z * 2.6, [[0.05, z * 0.35], [0.32, z * 0.95]]);
+      if (st === 'feather') { blade(x, y, ang - Math.PI / 3, z * 1.5, [[0.1, z * 0.22], [0.5, z * 0.3]]); return blade(x, y, ang + Math.PI / 3, z * 1.5, [[0.1, z * 0.22], [0.5, z * 0.3]]); }
+      if (st === 'dew') { faces += `<circle cx="${f(x + dx * z * 0.7)}" cy="${f(y + dy * z * 0.7)}" r="${f(z * 0.72)}" fill="url(#${U('bead')})"/>`; return; }
+      return blade(x - dx * z * 0.3, y - dy * z * 0.3, ang, z * 1.8, [[0.4, z * 0.42]]);
     };
 
-    const L1 = 50 + A[0].len * 3.6, L2 = 30 + A[1].len * 3.1, L3 = 28 + A[2].len * 3.3;
-    const z4 = 3.4 + A[3].len * 0.42, h5 = 9 + A[4].len * 0.85, z6 = 2.2 + A[5].len * 0.3;
-    const plate5 = A[4].style === 'dew' ? `<circle cy="${f(-h5 * 0.92)}" r="${f(h5 * 0.8)}" fill="url(#${U('b')})" ${edge}/>`
-      : A[4].style === 'spike' ? kite(2, h5 * 2, h5 * 0.62, 0.62, 'b')
-      : A[4].style === 'needle' ? kite(2, h5 * 2.1, h5 * 0.36, 0.5, 'b')
-      : `<path d="${hexP(h5 * 0.94, h5, 30)}" fill="url(#${U('b')})" ${edge}/>` + (A[4].style === 'feather' ? `<path d="${hexP(h5 * 0.94, h5 * 0.55, 30)}" fill="none" ${edge}/>` : '');
-    const tip1 = Math.min(L1, 96 - z4 * 1.6), tip2 = Math.min(L2, 92 - z6 * 1.5);
-    const flake =
-      six(`<g transform="rotate(21)">${blade(A[2].style, 15, L3, 0.82)}</g><g transform="rotate(-21)">${blade(A[2].style, 15, L3, 0.82)}</g>`) +
-      six(blade(A[1].style, 12, tip2, 0.8) + gem(A[5].style, tip2, z6), 30) +
-      six(blade(A[0].style, 8, tip1) + gem(A[3].style, tip1, z4)) +
-      six(plate5, 30) +
-      `<path d="${hexP(0, 6.5)}" fill="${W}"/>` + six(vein('M0 0L0 -13', 0.6));
+    const L0 = 62 + A[0].len * 2.4, L1 = L0 * (0.27 + A[1].len * 0.011), core = 10 + A[4].len * 0.8;
+    const nB = 2 + Math.round(A[2].len / 4.5), bLen = L0 * (0.18 + A[2].len * 0.014);
+    const z3 = 4 + A[3].len * 0.5, z5 = 2.6 + A[5].len * 0.3;
+    for (let i = 0; i < 6; i++) {
+      const ang = i * Math.PI / 3, ang2 = ang + Math.PI / 6;
+      // secondary arm between main arms
+      const t2 = blade(Math.sin(ang2) * core * 0.8, -Math.cos(ang2) * core * 0.8, ang2, L1 - core * 0.8, scaled(A[1].style, 0.75));
+      ornament(A[5].style, t2[0], t2[1], ang2, z5);
+      // side branches: parallel to the neighbouring arms, longest near the root
+      for (let j = 0; j < nB; j++) {
+        const t = 0.42 + j * (0.4 / Math.max(1, nB - 1)), r = L0 * t, len = bLen * (1 - j * 0.2);
+        const bx = Math.sin(ang) * r, by = -Math.cos(ang) * r;
+        for (const s of [-1, 1]) blade(bx, by, ang + s * Math.PI / 3, len, scaled(A[2].style, 0.62));
+      }
+      // main arm
+      const tip = blade(Math.sin(ang) * core * 0.6, -Math.cos(ang) * core * 0.6, ang, L0 - core * 0.6, PROF[A[0].style]);
+      ornament(A[3].style, tip[0], tip[1], ang, z3);
+    }
+    plate(0, 0, core, 30, A[4].style === 'plate' || A[4].style === 'needle' ? 0.55 : 0);
+    if (A[4].style === 'dew') faces += `<circle r="${f(core * 0.36)}" fill="url(#${U('bead')})"/>`;
+    const k = core * 0.9;
+    const glint = `<path class="fglint" d="M0 ${f(-k)}Q${f(k * 0.1)} ${f(-k * 0.1)} ${f(k)} 0Q${f(k * 0.1)} ${f(k * 0.1)} 0 ${f(k)}Q${f(-k * 0.1)} ${f(k * 0.1)} ${f(-k)} 0Q${f(-k * 0.1)} ${f(-k * 0.1)} 0 ${f(-k)}Z" fill="#fff"/>`;
 
     svg.innerHTML = `<defs>
-      <radialGradient id="${U('g')}"><stop offset="0" stop-color="#9dbcff" stop-opacity=".7"/><stop offset=".6" stop-color="#9dbcff" stop-opacity=".2"/><stop offset="1" stop-color="#9dbcff" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${U('a')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".78"/><stop offset="1" stop-color="#fff" stop-opacity=".97"/></linearGradient>
-      <linearGradient id="${U('b')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient>
-      <filter id="${U('n')}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.2 -.75" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
-      <filter id="${U('fr')}" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 .42 0 0 0 0 .58 0 0 0 0 1 0 0 0 1.5 -.62" result="n"/><feComposite in="n" in2="SourceGraphic" operator="in" result="s"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="s"/></feMerge></filter>
+      <radialGradient id="${U('g')}"><stop offset="0" stop-color="#a9c4ff" stop-opacity=".55"/><stop offset=".55" stop-color="#a9c4ff" stop-opacity=".14"/><stop offset="1" stop-color="#a9c4ff" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${U('bead')}" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#dbe6ff"/><stop offset="1" stop-color="#8aa5ea"/></radialGradient>
+      <filter id="${U('blur')}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.2"/></filter>
     </defs>
-    <g class="ly" style="--i:0"><circle r="80" fill="url(#${U('g')})" opacity=".35"/><circle r="80" fill="url(#${U('g')})" filter="url(#${U('n')})"/></g>
-    <g class="ly" style="--i:1"><g class="rot" style="--dur:200s"><g filter="url(#${U('fr')})">${flake}</g></g></g>`;
+    <g class="ly" style="--i:0"><circle r="96" fill="url(#${U('g')})"/></g>
+    <g class="ly" style="--i:1"><g class="rot" style="--dur:240s">
+      <g id="${U('fl')}">${faces}<path d="${ridges}" fill="none" stroke="#fff" stroke-width=".5" stroke-linecap="round" opacity=".85"/></g>
+    </g></g>
+    <g class="ly" style="--i:2">${glint}</g>`;
+    const host = svg.querySelector(`#${U('fl')}`);
+    const halo = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    halo.setAttribute('href', `#${U('fl')}`); halo.setAttribute('filter', `url(#${U('blur')})`); halo.setAttribute('opacity', '.75');
+    host.parentNode.insertBefore(halo, host);
   }
 
   /* ───────── ice ───────── */
