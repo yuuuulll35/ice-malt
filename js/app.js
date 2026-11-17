@@ -194,6 +194,55 @@
     raf = (P.length || ambient) ? requestAnimationFrame(loop) : 0;
   }
 
+  /* ───────── liquid gradient background (WebGL, falls back to the CSS layers) ───────── */
+  (function liquid() {
+    const cv = document.getElementById('bgfx');
+    if (!cv) return;
+    const gl = cv.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
+    if (!gl) return;
+    const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+    const FS = `precision mediump float;
+uniform vec2 r;uniform float t;
+vec3 blob(vec3 col,vec2 p,vec2 c,float rad,vec3 tint,float k){
+  float d=length(p-c);
+  float w=exp(-d*d/(rad*rad));
+  return mix(col,tint,w*k);
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/r;
+  float asp=r.x/r.y;
+  vec2 p=vec2(uv.x*asp,uv.y);
+  vec3 col=mix(vec3(.80,.86,1.),vec3(.95,.97,1.),uv.y);
+  float s=t*.11;
+  float R=.42*max(1.,1./asp)+.18;
+  col=blob(col,p,vec2(.18*asp+.10*sin(s*.9),.78+.08*cos(s*1.1)),R*(.62+.32*sin(s*1.7)),vec3(.36,.52,.95),.82);
+  col=blob(col,p,vec2(.82*asp+.12*cos(s*.7+1.),.22+.10*sin(s*.8)),R*(.70+.34*sin(s*1.3+2.)),vec3(.40,.56,.97),.78);
+  col=blob(col,p,vec2(.55*asp+.18*sin(s*.6+3.),.55+.12*cos(s*.9+1.)),R*(.48+.30*sin(s*1.1+4.)),vec3(.58,.72,1.),.70);
+  col=blob(col,p,vec2(.30*asp+.14*cos(s*.8+2.),.24+.10*sin(s*1.2+3.)),R*(.50+.28*sin(s*1.5+1.)),vec3(.62,.86,1.),.55);
+  col=blob(col,p,vec2(.72*asp+.10*sin(s*1.1+5.),.80+.06*cos(s*.7+2.)),R*(.46+.26*sin(s*1.9+3.)),vec3(1.),.85);
+  col=blob(col,p,vec2(.42*asp+.16*cos(s*.5+4.),.92+.05*sin(s*.9)),R*(.40+.22*sin(s*1.4+5.)),vec3(1.),.75);
+  col=blob(col,p,vec2(.95*asp+.08*sin(s*.9+1.),.58+.10*cos(s*1.3+4.)),R*(.38+.24*sin(s*1.6+2.)),vec3(.30,.47,.93),.6);
+  gl_FragColor=vec4(col,1.);
+}`;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
+    const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+    if (!vs || !fs) return;
+    const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
+    gl.useProgram(pr);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uR = gl.getUniformLocation(pr, 'r'), uT = gl.getUniformLocation(pr, 't');
+    const SCALE = 0.4;
+    const size = () => { const w = Math.max(1, Math.round(innerWidth * SCALE)), h = Math.max(1, Math.round(innerHeight * SCALE)); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); } };
+    size(); addEventListener('resize', size);
+    document.documentElement.classList.add('gl-bg');
+    const t0 = performance.now() - 40000 * Math.random();
+    const frame = now => { if (!document.hidden) { gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); } requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+  })();
+
   /* ───────── ambient decor ───────── */
   (function decor() {
     const host = $('#decor'), r = seeded('frost');
