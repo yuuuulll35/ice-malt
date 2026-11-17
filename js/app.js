@@ -381,16 +381,21 @@
     const k = core * 0.9;
     const glint = `<path class="fglint" d="M0 ${f(-k)}Q${f(k * 0.1)} ${f(-k * 0.1)} ${f(k)} 0Q${f(k * 0.1)} ${f(k * 0.1)} 0 ${f(k)}Q${f(-k * 0.1)} ${f(k * 0.1)} ${f(-k)} 0Q${f(-k * 0.1)} ${f(-k * 0.1)} 0 ${f(-k)}Z" fill="#fff"/>`;
 
+    const star = z => `<path d="M0 ${f(-z)}Q${f(z * 0.12)} ${f(-z * 0.12)} ${f(z)} 0Q${f(z * 0.12)} ${f(z * 0.12)} 0 ${f(z)}Q${f(-z * 0.12)} ${f(z * 0.12)} ${f(-z)} 0Q${f(-z * 0.12)} ${f(-z * 0.12)} 0 ${f(-z)}Z" fill="#fff"/>`;
+    let burst = '<circle class="wave" r="10"/><circle class="wave w2" r="10"/>';
+    for (let i = 0; i < 12; i++) burst += `<g transform="rotate(${i * 30 + 15})"><g class="sp" style="--d:${(i % 3) * 0.07}s;--far:${i % 2 ? 78 : 96}px">${star(i % 2 ? 3 : 5)}</g></g>`;
+    for (let i = 0; i < 18; i++) burst += `<g transform="rotate(${i * 20 + 5})"><circle class="mote" r="${i % 3 ? 0.9 : 1.4}" style="--d:${0.1 + (i % 4) * 0.06}s;--far:${50 + (i * 37) % 44}px"/></g>`;
     svg.innerHTML = `<defs>
       <radialGradient id="${U('g')}"><stop offset="0" stop-color="#a9c4ff" stop-opacity=".55"/><stop offset=".55" stop-color="#a9c4ff" stop-opacity=".14"/><stop offset="1" stop-color="#a9c4ff" stop-opacity="0"/></radialGradient>
       <radialGradient id="${U('bead')}" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#dbe6ff"/><stop offset="1" stop-color="#8aa5ea"/></radialGradient>
       <filter id="${U('blur')}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.2"/></filter>
     </defs>
     <g class="ly" style="--i:0"><circle r="96" fill="url(#${U('g')})"/></g>
-    <g class="ly" style="--i:1"><g class="rot" style="--dur:240s">
+    <g class="ly" style="--i:1"><g class="rot" style="--dur:48s">
       <g id="${U('fl')}">${faces}<path d="${ridges}" fill="none" stroke="#fff" stroke-width=".5" stroke-linecap="round" opacity=".85"/></g>
     </g></g>
-    <g class="ly" style="--i:2">${glint}</g>`;
+    <g class="ly" style="--i:2">${glint}</g>
+    <g class="burst" aria-hidden="true">${burst}</g>`;
     const host = svg.querySelector(`#${U('fl')}`);
     const halo = document.createElementNS('http://www.w3.org/2000/svg', 'use');
     halo.setAttribute('href', `#${U('fl')}`); halo.setAttribute('filter', `url(#${U('blur')})`); halo.setAttribute('opacity', '.75');

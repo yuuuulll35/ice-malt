@@ -175,7 +175,7 @@ body.freezing .blk { cursor: default; }
 .blk.gone .f { animation: gone .2s ease-out forwards; }
 @keyframes gone { 0% { transform: scale(1.06); background: #fff; } 100% { transform: scale(.8); opacity: 0; } }
 
-.emblem { position: absolute; left: 50%; top: 50%; height: 90%; aspect-ratio: 1; transform: translate(-50%, -50%); overflow: visible; z-index: 3; pointer-events: none; opacity: 0;
+.emblem { position: absolute; left: 50%; top: 50%; height: 76%; aspect-ratio: 1; transform: translate(-50%, -50%); overflow: visible; z-index: 3; pointer-events: none; opacity: 0;
   filter: drop-shadow(0 0 6px rgba(190, 210, 255, .55)); }
 .emblem.on { opacity: 1; }
 .emblem .ly { opacity: 0; }
@@ -297,7 +297,6 @@ body.thawing .ice::before { opacity: 1; }
 .sh-visual { border-right: var(--rule); }
 .window { position: relative; aspect-ratio: 1; overflow: hidden; border-bottom: var(--rule); }
 .window::after { content: ""; position: absolute; inset: 0; background-image: var(--grain); opacity: .25; mix-blend-mode: soft-light; }
-.window .emblem { height: 80%; }
 .ring { position: absolute; inset: 3%; width: 94%; height: 94%; z-index: 2; animation: spin 90s linear infinite; }
 .ring text { font: italic 400 7.2px "Bodoni Moda", serif; letter-spacing: .12em; fill: var(--ink); text-transform: uppercase; }
 
@@ -320,7 +319,7 @@ body.thawing .ice::before { opacity: 1; }
 .item .color-name { font-weight: 600; font-size: 18px; line-height: 1.4; color: #fff; }
 .item .form-name { font-weight: 600; font-size: 22px; line-height: 1.4; margin-bottom: 4px; color: #fff; }
 .emblem .marks text { font: italic 400 8px "Bodoni Moda", serif; fill: #fff; opacity: .9; }
-.window .emblem { height: 78%; }
+.window .emblem { height: 66%; }
 .light { display: flex; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: var(--rule); font-size: 14.5px !important; }
 .light span:first-child { flex: none; font: 400 10px/2.6 var(--f-mono); letter-spacing: .14em; color: var(--ink); }
 .arms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 26px; }
@@ -381,3 +380,15 @@ body.thawing .ice::before { opacity: 1; }
   .emblem .ly { opacity: 1; }
 }
 .emblem .fglint { transform-box: fill-box; transform-origin: center; animation: twinkle 3.4s ease-in-out infinite; }
+.emblem .burst { opacity: 0; }
+#emblem.on .burst { opacity: 1; }
+.burst .wave { fill: none; stroke: #fff; stroke-width: 1.4; vector-effect: non-scaling-stroke; transform-box: view-box; transform-origin: 50% 50%; opacity: 0; }
+#emblem.on .burst .wave { animation: wave 1.5s cubic-bezier(.15, .7, .3, 1) .15s both; }
+#emblem.on .burst .wave.w2 { animation-delay: .45s; stroke: #bcd2ff; }
+@keyframes wave { 0% { opacity: .9; transform: scale(.4); } 100% { opacity: 0; transform: scale(9.5); } }
+.burst .sp, .burst .mote { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.burst .mote { fill: #dfe9ff; }
+#emblem.on .burst .sp { animation: fly 1.6s cubic-bezier(.12, .75, .3, 1) calc(.2s + var(--d)) both; }
+#emblem.on .burst .mote { animation: drift 2.4s ease-out calc(.25s + var(--d)) both; }
+@keyframes fly { 0% { opacity: 0; transform: translateY(-14px) scale(.2) rotate(0); } 18% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(calc(var(--far) * -1)) scale(1) rotate(90deg); } }
+@keyframes drift { 0% { opacity: 0; transform: translateY(-16px); } 25% { opacity: .9; } 100% { opacity: 0; transform: translateY(calc(var(--far) * -1)); } }
