@@ -472,7 +472,7 @@ void main(){
     const glint = `<path class="fglint" d="M0 ${f(-k)}Q${f(k * 0.1)} ${f(-k * 0.1)} ${f(k)} 0Q${f(k * 0.1)} ${f(k * 0.1)} 0 ${f(k)}Q${f(-k * 0.1)} ${f(k * 0.1)} ${f(-k)} 0Q${f(-k * 0.1)} ${f(-k * 0.1)} 0 ${f(-k)}Z" fill="#fff"/>`;
 
     const star = z => `<path d="M0 ${f(-z)}Q${f(z * 0.12)} ${f(-z * 0.12)} ${f(z)} 0Q${f(z * 0.12)} ${f(z * 0.12)} 0 ${f(z)}Q${f(-z * 0.12)} ${f(z * 0.12)} ${f(-z)} 0Q${f(-z * 0.12)} ${f(-z * 0.12)} 0 ${f(-z)}Z" fill="#fff"/>`;
-    let burst = '<circle class="wave" r="10"/><circle class="wave w2" r="10"/>';
+    let burst = '<circle class="wave" r="10" fill="none"/><circle class="wave w2" r="10" fill="none"/>';
     for (let i = 0; i < 12; i++) burst += `<g transform="rotate(${i * 30 + 15})"><g class="sp" style="--d:${(i % 3) * 0.07}s;--far:${i % 2 ? 78 : 96}px">${star(i % 2 ? 3 : 5)}</g></g>`;
     for (let i = 0; i < 18; i++) burst += `<g transform="rotate(${i * 20 + 5})"><circle class="mote" r="${i % 3 ? 0.9 : 1.4}" style="--d:${0.1 + (i % 4) * 0.06}s;--far:${50 + (i * 37) % 44}px"/></g>`;
     svg.innerHTML = `<defs>
