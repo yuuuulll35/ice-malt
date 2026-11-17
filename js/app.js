@@ -88,6 +88,18 @@
       });
       for (let i = 0; i < 10; i++) this.ping(t + 0.3 + i * 0.13, rnd(2400, 5200), 0.7, 0.025);
     },
+    frost(k) {
+      if (!this.ok()) return;
+      const t = this.ctx.currentTime;
+      this.grain(t, 5200 + k * 3500, 7, 0.05, 0.16, 'highpass');
+      this.ping(t, 1400 + k * 1600, 0.12, 0.025);
+    },
+    seal() {
+      if (!this.ok()) return;
+      const t = this.ctx.currentTime;
+      this.ping(t, 2093, 0.9, 0.05); this.ping(t + 0.04, 3136, 1.1, 0.03);
+      this.grain(t, 7000, 3, 0.18, 0.2, 'highpass');
+    },
     ui() { if (this.ok()) this.ping(this.ctx.currentTime, 1320, 0.12, 0.06); }
   };
 
@@ -481,6 +493,31 @@
     paintHud();
     state.heartRect = $('#ice .heart').getBoundingClientRect();
     ambient = true; kick();
+    freezeIn();
+  }
+
+  // entrance: the bare heart beats alone, then ice closes in from the edges and seals it
+  function freezeIn() {
+    state.locked = false;
+    body.classList.remove('freezing');
+    if (reduce) return;
+    state.locked = true;
+    body.classList.add('freezing');
+    const box = ice.getBoundingClientRect(), mx = box.left + box.width / 2, my = box.top + box.height / 2;
+    const order = state.blocks.map(b => { const r = b.el.getBoundingClientRect(); return { b, d: Math.hypot(r.left + r.width / 2 - mx, r.top + r.height / 2 - my) }; }).sort((a, z) => z.d - a.d);
+    const HOLD = 950, STEP = 60;
+    order.forEach(({ b }, i) => {
+      b.el.style.setProperty('--fd', HOLD + i * STEP + 'ms');
+      b.el.classList.add('freeze');
+      later(() => Sfx.frost(i / order.length), HOLD + i * STEP);
+    });
+    later(() => {
+      state.blocks.forEach(b => b.el.classList.remove('freeze'));
+      body.classList.remove('freezing');
+      ice.classList.remove('sealed'); void ice.offsetWidth; ice.classList.add('sealed');
+      Sfx.seal();
+      state.locked = false;
+    }, HOLD + order.length * STEP + 380);
   }
 
   function paintHud() {
@@ -489,7 +526,7 @@
   }
 
   function hit(b, cxp, cyp, rect, viaKey) {
-    if (b.hp <= 0 || state.done) return;
+    if (b.hp <= 0 || state.done || state.locked) return;
     Sfx.init();
     b.hp--; state.taps++;
     if (state.taps === 4) $('#hudHint').classList.add('off');
@@ -635,7 +672,8 @@
   }
 
   function goHome() {
-    clearTimers(); ambient = false; state.done = true;
+    clearTimers(); ambient = false; state.done = true; state.locked = false;
+    body.classList.remove('freezing');
     body.classList.remove('thawing', 'thawed');
     setMelt(0);
     show('intro');
