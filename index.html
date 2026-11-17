@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ICE MELT</title>
+<meta name="description" content="얼음 아래 잠들어 있던 마음을 깨우는 OOC 감정 진단 뷰어">
+<meta name="theme-color" content="#d6e4ff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Noto+Serif+KR:wght@300;400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=Martian+Mono:wght@400;600&display=swap" crossorigin="anonymous">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-screen="intro">
+
+<div class="bg" aria-hidden="true">
+  <canvas id="bgfx"></canvas>
+  <div class="bg-warm"></div>
+  <div class="bg-night"></div>
+  <div class="bg-grain"></div>
+</div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="flash" id="flash" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true">
+  <p class="c-msg" id="cMsg">얼음을 연타해<br>잠든 마음을 깨워 주세요</p>
+  <div class="cue" id="cue"></div>
+</div>
+
+<header class="bar">
+  <button class="brand" id="homeBtn" type="button" aria-label="처음 화면으로">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1c.9 6 5 10.100 11 11-6 .900-10.100 5-11 11-.900-6-5-10.100-11-11 6-.900 10.100-5 11-11Z"/></svg>
+    <span>ICE MELT</span>
+  </button>
+  <div class="bar-right">
+    <span class="bar-pair" id="barPair"></span>
+    <button class="icon-btn" id="soundBtn" type="button" aria-pressed="true" aria-label="소리 끄기">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9.500h3.500L12 5.500v13l-4.500-4H4z"/>
+        <path class="snd-on" d="M15.500 9c1.600 1.700 1.600 4.300 0 6M18 6.500c3 3 3 8 0 11"/>
+        <path class="snd-off" d="M15.500 9.500l5 5M20.500 9.500l-5 5"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="screen intro" id="intro" aria-labelledby="introTitle">
+    <div class="intro-hero">
+      <h1 id="introTitle" class="title">
+        <span class="t-ice">ICE</span>
+        <span class="t-melt">MELT</span>
+      </h1>
+      <p class="lead">단단한 얼음 아래, 그 사람이 당신에게 차마 꺼내지 못한 마음이 잠들어 있어요. 얼음을 두드릴 때마다 숨겨 둔 속마음이 한 조각씩 들려오고, 마지막 얼음이 깨지면 그 마음은 세상에 하나뿐인 눈 결정으로 남습니다.</p>
+    </div>
+
+    <div class="intro-panel">
+      <ol class="steps" id="steps"></ol>
+      <div class="go">
+        <button class="btn primary" id="startBtn" type="button" disabled>해동 시작</button>
+        <button class="btn" id="sampleBtn" type="button">예시로 보기</button>
+        <button class="link" id="lastBtn" type="button" hidden>지난 해동 다시 보기</button>
+        <button class="link reset" id="resetBtn" type="button" hidden>입력 모두 지우기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen play" id="play" hidden aria-label="얼음 깨기">
+    <p class="pair"><span id="pNpc"></span><i aria-hidden="true"></i><span id="pPc"></span></p>
+
+    <div class="stagewrap">
+      <div class="lane lane-l" id="laneL"></div>
+
+      <div class="ice-col">
+        <div class="ice" id="ice">
+          <svg class="deco" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <circle cx="150" cy="100" r="62"/><circle cx="150" cy="100" r="88"/><circle cx="40" cy="30" r="22"/><circle cx="262" cy="168" r="30"/>
+            <g class="stars">
+              <path d="M52 150q1 9 10 10-9 1-10 10-1-9-10-10 9-1 10-10Z"/><path d="M246 36q1.500 12 13.500 13.500-12 1.500-13.500 13.500-1.500-12-13.500-13.500 12-1.500 13.500-13.500Z"/>
+              <path d="M92 28q.800 6 6.800 6.800-6 .800-6.800 6.800-.800-6-6.800-6.800 6-.800 6.800-6.800Z"/><path d="M214 152q.800 6 6.800 6.800-6 .800-6.800 6.800-.800-6-6.800-6.800 6-.800 6.800-6.800Z"/>
+              <path d="M24 92q.600 5 5.600 5.600-5 .600-5.600 5.600-.600-5-5.600-5.600 5-.600 5.600-5.600Z"/><path d="M280 96q.600 5 5.600 5.600-5 .600-5.600 5.600-.600-5-5.600-5.600 5-.600 5.600-5.600Z"/>
+            </g>
+          </svg>
+          <svg class="heart" viewBox="-8 -8 116 108" aria-hidden="true">
+            <defs><radialGradient id="hg" cx="38%" cy="30%" r="80%"><stop offset="0" class="h0"/><stop offset=".45" class="h1"/><stop offset="1" class="h2"/></radialGradient></defs>
+            <path class="hb" d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z"/>
+            <path class="hs" d="M17 28c1-8 6-13 13-14"/>
+          </svg>
+          <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+          <svg class="emblem" id="emblem" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          <div class="blocks" id="blocks"></div>
+        </div>
+        <div class="hud">
+          <span class="label" id="hudCount"></span>
+        </div>
+      </div>
+
+      <div class="lane lane-r" id="laneR"></div>
+
+      <div class="manifest" id="manifest">
+        <p class="label">Snow crystal · one of one</p>
+        <h2 id="mName"></h2>
+        <p class="m-desc" id="mDesc"></p>
+        <blockquote><p id="mFinal"></p></blockquote>
+        <button class="btn primary" id="toResult" type="button">감정서 받기</button>
+      </div>
+    </div>
+    <div class="sr" aria-live="polite" id="live"></div>
+  </section>
+
+  <section class="screen result" id="result" hidden aria-label="눈 결정 감정서">
+    <article class="sheet" id="sheet">
+      <header class="sh-head">
+        <p class="sh-en">Snow Crystal Certificate</p>
+        <p class="sh-type"><span>TYPE</span><b id="rType"></b><i id="rTypeEn"></i></p>
+      </header>
+
+      <div class="sh-hero">
+        <div class="window">
+          <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+          <svg class="ring" viewBox="-100 -100 200 200" aria-hidden="true"><defs><path id="ringPath" d="M0 -94a94 94 0 1 1-.01 0"/></defs><text><textPath href="#ringPath" id="ringText" textLength="584" lengthAdjust="spacing"></textPath></text></svg>
+          <svg class="emblem on" id="emblemR" viewBox="-100 -100 200 200" role="img" aria-label="눈 결정"></svg>
+        </div>
+        <div class="hero-text">
+          <p class="sh-pair">FROM <b id="rNpc"></b><i aria-hidden="true"></i>TO <b id="rPc"></b></p>
+          <h2 id="rName"></h2>
+          <p class="r-desc" id="rDesc"></p>
+        </div>
+        <div class="facts">
+          <div class="fact" id="factLight"><p class="fact-k">이 마음의 색</p><p class="fact-name" id="rLightName"></p><p class="fact-v" id="rLightMean"></p></div>
+          <div class="fact"><p class="fact-k">처음 만났을 때의 경계심</p><p class="fact-name" id="rIceName"></p><p class="fact-v" id="rIceWhy"></p></div>
+        </div>
+      </div>
+
+      <section class="item">
+        <h3><b>01</b><span>처음, 마음이 맺힌 자리<small>마음이 처음 움직이기 시작한 순간</small></span></h3>
+        <p id="rCore"></p>
+      </section>
+      <section class="item">
+        <h3><b>02</b><span>당신을 향해 자라난 여섯 가지 마음<small>말 대신 행동으로 마음을 전해 온 여섯 가지 방식</small></span></h3>
+        <div class="car">
+          <ol class="arms" id="rArms"></ol>
+          <div class="car-nav">
+            <button class="car-btn" type="button" data-dir="-1" aria-label="이전 마음"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="car-dots" id="carDots" aria-hidden="true"></div>
+            <button class="car-btn" type="button" data-dir="1" aria-label="다음 마음"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </section>
+      <section class="item phases" id="phases" data-phase="before">
+        <div class="ph-toggle" role="tablist" aria-label="마음의 전과 후">
+          <i class="ph-thumb" aria-hidden="true"></i>
+          <button type="button" role="tab" data-p="before" aria-selected="true">마음을 숨기던 때</button>
+          <button type="button" role="tab" data-p="after" aria-selected="false">마음을 연 지금</button>
+        </div>
+        <div class="ph-panels">
+          <div class="ph-panel ph-before" role="tabpanel">
+            <p class="ph-label">마음을 숨기던 때</p>
+            <h3><b>03</b><span>차마 녹이지 못했던 이유</span></h3>
+            <p id="rFrozen"></p>
+          </div>
+          <div class="ph-panel ph-after" role="tabpanel">
+            <p class="ph-label">마음을 연 지금</p>
+            <h3><b>04</b><span>그럼에도, 끝내 녹지 않는 까닭</span></h3>
+            <p id="rLasting"></p>
+          </div>
+        </div>
+      </section>
+      <section class="item truth">
+        <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="truth-head"><p class="truth-no">05</p><h3 class="truth-title">얼음 아래 숨겨 둔 말</h3></div>
+        <div class="truth-card"><p id="rTruth"></p></div>
+      </section>
+
+      <details class="sh-log">
+        <summary>얼음 틈으로 새어 나온 혼잣말 <span id="rLogN"></span></summary>
+        <ol id="rLog"></ol>
+      </details>
+    </article>
+
+    <div class="go result-actions">
+      <button class="btn primary" id="againBtn" type="button">다시 깨기</button>
+      <button class="btn" id="saveImg" type="button">이미지로 저장</button>
+      <button class="btn" id="newBtn" type="button">다른 마음 들여다보기</button>
+    </div>
+  </section>
+</main>
+
+<div class="share-wrap" aria-hidden="true">
+  <div class="share-card" id="shareCard">
+    <div class="sc-top"><span class="sc-brand">ICE MELT</span><span class="sc-type"><b id="scType"></b><i id="scTypeEn"></i></span></div>
+    <div class="sc-window">
+      <div class="aurora"><i></i><i></i><i></i></div>
+      <svg class="emblem on" id="scEmblem" viewBox="-100 -100 200 200"></svg>
+    </div>
+    <p class="sc-pair">FROM <b id="scNpc"></b><i></i>TO <b id="scPc"></b></p>
+    <h2 class="sc-name" id="scName"></h2>
+    <div class="sc-facts">
+      <p><span>이 마음의 색</span><b id="scLight"></b></p>
+    </div>
+    <p class="sc-quote" id="scQuote"></p>
+    <p class="sc-foot">Snow Crystal Certificate · one of one</p>
+  </div>
+</div>
+<div class="leave" id="leave" role="dialog" aria-modal="true" aria-labelledby="leaveTitle" aria-describedby="leaveDesc" hidden>
+  <div class="leave-card">
+    <h2 id="leaveTitle">처음 화면으로 돌아갈까요?</h2>
+    <p id="leaveDesc">지금 녹이고 있던 마음은 여기서 멈춰요.<br>입력해 둔 답도 함께 지워지니, 다시 보려면 처음부터 넣어야 해요.</p>
+    <div class="leave-acts">
+      <button class="btn" id="leaveStay" type="button">계속 볼게요</button>
+      <button class="btn primary" id="leaveGo" type="button">처음으로 갈게요</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/vendor/html-to-image.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
