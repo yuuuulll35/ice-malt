@@ -246,7 +246,7 @@
   (function liquid() {
     const cv = document.getElementById('bgfx');
     if (!cv) return;
-    const gl = cv.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
+    const gl = cv.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
     if (!gl) return;
     const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
     const FS = `precision mediump float;
@@ -287,12 +287,22 @@ void main(){
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const uR = gl.getUniformLocation(pr, 'r'), uT = gl.getUniformLocation(pr, 't');
     const SCALE = innerWidth < 760 ? 0.22 : 0.3;
-    const size = () => { const w = Math.max(1, Math.round(innerWidth * SCALE)), h = Math.max(1, Math.round(innerHeight * SCALE)); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); } };
-    size(); addEventListener('resize', size);
+    // the on-screen keyboard shrinks the viewport: keep the tallest height seen so the canvas is not resized (and cleared) on every open/close
+    let tallest = 0, lastW = 0;
+    const size = () => {
+      const vw = document.documentElement.clientWidth || innerWidth;
+      if (vw !== lastW) { lastW = vw; tallest = 0; }
+      tallest = Math.max(tallest, innerHeight, (window.visualViewport && visualViewport.height) || 0);
+      const w = Math.max(1, Math.round(vw * SCALE)), h = Math.max(1, Math.round(tallest * SCALE));
+      if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); draw(performance.now()); }
+    };
     const t0 = performance.now() - 40000 * Math.random();
     let lastDraw = 0;
-    const frame = now => { if (!document.hidden && now - lastDraw > 33) { lastDraw = now; gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); if (!ok && !gl.getError()) { ok = true; document.documentElement.classList.add('gl-bg'); } } requestAnimationFrame(frame); };
     let ok = false;
+    const draw = now => { lastDraw = now; gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); if (!ok && !gl.getError()) { ok = true; document.documentElement.classList.add('gl-bg'); } };
+    const frame = now => { if (!document.hidden && now - lastDraw > 33) draw(now); requestAnimationFrame(frame); };
+    cv.addEventListener('webglcontextlost', e => { e.preventDefault(); document.documentElement.classList.remove('gl-bg'); ok = false; });
+    size(); addEventListener('resize', size);
     requestAnimationFrame(frame);
   })();
 

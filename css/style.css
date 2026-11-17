@@ -556,7 +556,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .duo .item.frozen, .duo .item.thawed { position: relative; }
 
 .item.truth { padding: clamp(44px, 5vw, 64px) clamp(18px, 5vw, 64px) clamp(36px, 4vw, 52px); text-align: center; }
-.item.truth .aurora { opacity: .55; }
 .item.truth::after { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(70% 60% at 50% 62%, rgba(8, 12, 46, .55), transparent 80%); }
 .truth-head { display: grid; justify-items: center; gap: 8px; margin-bottom: 26px; }
 .item > p.truth-no, .truth-no { font: 400 10px/1 var(--f-mono); letter-spacing: .24em; color: #0c1446; background: #cfdcff; padding: 6px 12px; border-radius: 999px; }
@@ -584,16 +583,27 @@ body.thawing .ice .aurora { opacity: 1; }
 #emblem.on, #emblemR { animation: emblem-spin 48s linear infinite; }
 @keyframes emblem-spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 .emblem .fglint { animation: none; }
-.aurora i { will-change: transform; -webkit-mask-image: none; mask-image: none; filter: blur(26px); }
 .ring { will-change: transform; }
 .manifest blockquote { padding-bottom: 34px; }
 @media (prefers-reduced-motion: reduce) { #emblem.on, #emblemR { animation: none; } }
 
 /* ───────── 05: aurora back, no box behind the words ───────── */
 .item.truth .aurora { opacity: .95; }
-.item.truth .aurora i { -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 3px, rgba(0, 0, 0, .7) 3px 7px); mask-image: repeating-linear-gradient(90deg, #000 0 3px, rgba(0, 0, 0, .7) 3px 7px); filter: blur(20px); }
 .item.truth::after { background: radial-gradient(60% 45% at 50% 64%, rgba(8, 12, 46, .35), transparent 80%); }
 .truth-card { background: none !important; border: 0; padding: 0 clamp(4px, 2vw, 24px); }
 .truth-card #rTruth { text-align: center; text-wrap: balance; text-shadow: 0 1px 14px rgba(6, 10, 40, .7); }
 .truth-card #rTruth::before { content: "「"; color: #b9c8ff; margin-right: .2em; }
 .truth-card #rTruth::after { content: "」"; color: #b9c8ff; margin-left: .2em; }
+
+/* ───────── light aurora: soft gradient bands + static curtain lines, only transform animates ───────── */
+.aurora { mix-blend-mode: normal; contain: strict; }
+.aurora i { filter: none !important; -webkit-mask-image: none !important; mask-image: none !important; will-change: transform; border-radius: 0; opacity: 1;
+  background-blend-mode: normal; }
+.aurora i:nth-child(1) { background: radial-gradient(48% 50% at 50% 50%, rgba(140, 220, 255, .55), rgba(140, 180, 255, .3) 45%, transparent 72%); }
+.aurora i:nth-child(2) { background: radial-gradient(46% 50% at 50% 50%, rgba(170, 160, 255, .42), rgba(120, 200, 255, .22) 50%, transparent 74%); opacity: .9; }
+.aurora i:nth-child(3) { background: radial-gradient(44% 50% at 50% 50%, rgba(210, 245, 255, .45), rgba(110, 190, 255, .2) 50%, transparent 74%); opacity: .8; }
+.aurora::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .07) 0 2px, transparent 2px 4px, rgba(10, 16, 60, .22) 4px 7px);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 15%, #000 65%, transparent); mask-image: linear-gradient(180deg, transparent, #000 15%, #000 65%, transparent); }
+.aurora::after { z-index: 2; }
+.bg { background-color: #f2f6ff; }
