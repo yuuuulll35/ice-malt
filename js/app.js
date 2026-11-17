@@ -100,6 +100,12 @@
       this.ping(t, 2093, 0.9, 0.05); this.ping(t + 0.04, 3136, 1.1, 0.03);
       this.grain(t, 7000, 3, 0.18, 0.2, 'highpass');
     },
+    cue(go) {
+      if (!this.ok()) return;
+      const t = this.ctx.currentTime;
+      if (go) { this.ping(t, 1318, 0.5, 0.12, 'triangle'); this.ping(t, 1976, 0.6, 0.07); }
+      else { this.ping(t, 880, 0.22, 0.09, 'triangle'); this.ping(t + 0.16, 880, 0.22, 0.09, 'triangle'); }
+    },
     ui() { if (this.ok()) this.ping(this.ctx.currentTime, 1320, 0.12, 0.06); }
   };
 
@@ -346,17 +352,14 @@
       six(plate5, 30) +
       `<path d="${hexP(0, 6.5)}" fill="${W}"/>` + six(vein('M0 0L0 -13', 0.6));
 
-    const trails = [[-78, -40, 26, 3.2], [72, -66, 34, 4], [84, 30, 22, 2.6], [-64, 62, 30, 3], [-88, 8, 18, 2.2]]
-      .map(([x, y, t, z]) => `<g transform="translate(${x} ${y})"><path d="M0 0L0 ${-t}" stroke="url(#${U('t')})" stroke-width="${f(z * 0.5)}" stroke-linecap="round"/>${star4(0, z)}</g>`).join('');
     svg.innerHTML = `<defs>
       <radialGradient id="${U('g')}"><stop offset="0" stop-color="#9dbcff" stop-opacity=".7"/><stop offset=".6" stop-color="#9dbcff" stop-opacity=".2"/><stop offset="1" stop-color="#9dbcff" stop-opacity="0"/></radialGradient>
       <linearGradient id="${U('a')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".78"/><stop offset="1" stop-color="#fff" stop-opacity=".97"/></linearGradient>
       <linearGradient id="${U('b')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient>
-      <linearGradient id="${U('t')}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-30"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
       <filter id="${U('n')}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.2 -.75" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
       <filter id="${U('fr')}" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 .42 0 0 0 0 .58 0 0 0 0 1 0 0 0 1.5 -.62" result="n"/><feComposite in="n" in2="SourceGraphic" operator="in" result="s"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="s"/></feMerge></filter>
     </defs>
-    <g class="ly" style="--i:0"><circle r="80" fill="url(#${U('g')})" opacity=".35"/><circle r="80" fill="url(#${U('g')})" filter="url(#${U('n')})"/>${trails}</g>
+    <g class="ly" style="--i:0"><circle r="80" fill="url(#${U('g')})" opacity=".35"/><circle r="80" fill="url(#${U('g')})" filter="url(#${U('n')})"/></g>
     <g class="ly" style="--i:1"><g class="rot" style="--dur:200s"><g filter="url(#${U('fr')})">${flake}</g></g></g>`;
   }
 
@@ -443,7 +446,6 @@
     $('#emblem').classList.remove('on'); $('#emblem').textContent = '';
     $('#pNpc').textContent = data.npc; $('#pPc').textContent = data.pc;
     $('#barPair').textContent = `${data.npc} → ${data.pc}`;
-    $('#hudHint').classList.remove('off');
     show('play');
     const [cols, rows] = narrow.matches ? [4, 5] : [6, 4];
     state.blocks = buildIce(blocksEl, cols, rows, true);
@@ -472,26 +474,40 @@
 
   // entrance: the bare heart beats alone, then ice closes in from the edges and seals it
   function freezeIn() {
+    const curtain = $('#curtain'), msg = $('#cMsg'), cue = $('#cue');
+    const say = (t, cls) => { cue.textContent = t; cue.className = 'cue'; void cue.offsetWidth; cue.classList.add(cls); };
     state.locked = false;
     body.classList.remove('freezing');
+    curtain.className = 'curtain'; msg.className = 'c-msg'; cue.className = 'cue';
     if (reduce) return;
     state.locked = true;
     body.classList.add('freezing');
-    const box = ice.getBoundingClientRect(), mx = box.left + box.width / 2, my = box.top + box.height / 2;
-    const order = state.blocks.map(b => { const r = b.el.getBoundingClientRect(); return { b, d: Math.hypot(r.left + r.width / 2 - mx, r.top + r.height / 2 - my) }; }).sort((a, z) => z.d - a.d);
-    const HOLD = 950, STEP = 60;
-    order.forEach(({ b }, i) => {
-      b.el.style.setProperty('--fd', HOLD + i * STEP + 'ms');
-      b.el.classList.add('freeze');
-      later(() => Sfx.frost(i / order.length), HOLD + i * STEP);
-    });
+    curtain.classList.add('on');
+    let t = 300;
+    if (!state.seenHint) {
+      later(() => msg.classList.add('show'), t);
+      later(() => msg.classList.remove('show'), t + 2300);
+      t += 3000;
+    }
+    state.seenHint = true;
+    later(() => { say('READY~', 'ready'); Sfx.cue(0); }, t);
+    later(() => { say('START!', 'start'); Sfx.cue(1); }, t + 1000);
+    const STEP = 30, n = state.blocks.length, open = t + 1650;
+    state.blocks.forEach(b => b.el.classList.add('wait'));
+    later(() => {
+      curtain.classList.remove('on');
+      const box = ice.getBoundingClientRect(), mx = box.left + box.width / 2, my = box.top + box.height / 2;
+      state.blocks.map(b => { const r = b.el.getBoundingClientRect(); return { b, d: Math.hypot(r.left + r.width / 2 - mx, r.top + r.height / 2 - my) }; })
+        .sort((x, y) => y.d - x.d)
+        .forEach(({ b }, i) => { b.el.style.setProperty('--fd', i * STEP + 'ms'); b.el.classList.remove('wait'); b.el.classList.add('freeze'); later(() => Sfx.frost(i / n), i * STEP); });
+    }, open);
     later(() => {
       state.blocks.forEach(b => b.el.classList.remove('freeze'));
       body.classList.remove('freezing');
       ice.classList.remove('sealed'); void ice.offsetWidth; ice.classList.add('sealed');
       Sfx.seal();
       state.locked = false;
-    }, HOLD + order.length * STEP + 380);
+    }, open + n * STEP + 380);
   }
 
   function paintHud() {
@@ -503,7 +519,6 @@
     if (b.hp <= 0 || state.done || state.locked) return;
     Sfx.init();
     b.hp--; state.taps++;
-    if (state.taps === 4) $('#hudHint').classList.add('off');
     const lx = clamp((cxp - rect.left) / rect.width * 100, 4, 96), ly = clamp((cyp - rect.top) / rect.height * 100, 4, 96);
     const dmg = 1 - b.hp / b.max;
     b.el.style.setProperty('--dmg', dmg.toFixed(2));
