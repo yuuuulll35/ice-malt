@@ -384,7 +384,8 @@ void main(){
     const c = d.crystal || {}, light = c.light || {};
     const rng = seeded(str(c.name) + str(d.npc)), keys = Object.keys(STYLE_KO);
     const arms = (Array.isArray(c.arms) ? c.arms : []).slice(0, 6).map(a => {
-      const hit = STYLES.find(([re]) => re.test(str(a && a.style, 12)));
+      // a saved reading already holds the internal key (e.g. "needle"); a fresh answer holds the Korean grain name
+      const raw = str(a && a.style, 12), hit = STYLE_KO[raw] ? [null, raw] : STYLES.find(([re]) => re.test(raw));
       return { name: str(a && a.name, 40), len: clamp(+(a && a.len) || 6, 1, 10), style: hit ? hit[1] : keys[rng() * keys.length | 0], desc: str(a && a.desc, 300) };
     });
     while (arms.length < 6) arms.push({ name: '', len: 3 + (rng() * 5 | 0), style: keys[rng() * keys.length | 0], desc: '' });
