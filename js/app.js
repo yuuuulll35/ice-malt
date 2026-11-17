@@ -792,6 +792,7 @@ void main(){
   }
 
   const WHEN_FALLBACK = ['처음 며칠', '조금 익숙해질 무렵', '가까워지던 때', '마음이 깊어지던 무렵', '얼마 전'];
+  const KEY_WHEN = ['첫 만남', '지금', '가까워지던 때', '마음이 깊어지던 무렵'];
   function whenLabel(b, i, n) {
     if (b.when) return b.when;
     if (i === 0) return '첫 만남';
@@ -838,7 +839,8 @@ void main(){
     $('#rArms').closest('.item').hidden = !named.length;
     fillList($('#rLog'), d.balloons, (b, i) => {
       const li = el('li'), head = el('p', 'tl-head');
-      head.append(el('span', 'tl-when', whenLabel(b, i, d.balloons.length)));
+      const when = whenLabel(b, i, d.balloons.length), key = i === 0 || i === d.balloons.length - 1 || KEY_WHEN.includes(when);
+      head.append(el('span', key ? 'tl-when key' : 'tl-when', when));
       if (b.tag) head.append(el('b', 'tl-tag', b.tag));
       li.append(head, el('p', 'tl-text', b.text));
       return li;
