@@ -706,3 +706,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .sh-log .tl-no { font: italic 400 14px/1 var(--f-en); color: #8a96c8; }
 .sh-log .tl-tag { font: 600 13.5px/1.4 var(--f-mincho); color: var(--ink); margin: 0; letter-spacing: .02em; }
 .sh-log .tl-text { margin: 0; font: 400 15px/1.9 var(--f-mincho); color: #1f2a66; }
+
+#rTruth::before, .truth-card #rTruth::before, .sc-quote::before { vertical-align: -.24em; margin-right: .08em; }
+#rTruth::after, .truth-card #rTruth::after, .sc-quote::after { vertical-align: -.62em; margin-left: .08em; }
