@@ -203,25 +203,27 @@
     const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
     const FS = `precision mediump float;
 uniform vec2 r;uniform float t;
-vec3 blob(vec3 col,vec2 p,vec2 c,float rad,vec3 tint,float k){
+float h(float n){return fract(sin(n*127.1)*43758.5453);}
+vec3 bloom(vec3 col,vec2 p,float asp,float id,float per,vec3 tint,float k){
+  float q=t/per+h(id)*7.;
+  float cyc=floor(q),f=fract(q);
+  vec2 c=vec2((.08+.84*h(cyc*3.1+id))*asp,.08+.84*h(cyc*5.7+id*2.3));
+  float e=1.-pow(1.-f,2.2);
+  float rad=mix(.05,.62,e)*max(1.,asp*.5);
+  float a=smoothstep(0.,.12,f)*(1.-smoothstep(.35,1.,f));
   float d=length(p-c);
-  float w=exp(-d*d/(rad*rad));
-  return mix(col,tint,w*k);
+  return mix(col,tint,exp(-d*d/(rad*rad))*a*k);
 }
 void main(){
   vec2 uv=gl_FragCoord.xy/r;
   float asp=r.x/r.y;
   vec2 p=vec2(uv.x*asp,uv.y);
-  vec3 col=mix(vec3(.80,.86,1.),vec3(.95,.97,1.),uv.y);
-  float s=t*.42;
-  float R=.42*max(1.,1./asp)+.18;
-  col=blob(col,p,vec2(.18*asp+.10*sin(s*.9),.78+.08*cos(s*1.1)),R*(.62+.46*sin(s*1.7)),vec3(.36,.52,.95),.82);
-  col=blob(col,p,vec2(.82*asp+.12*cos(s*.7+1.),.22+.10*sin(s*.8)),R*(.70+.48*sin(s*1.3+2.)),vec3(.40,.56,.97),.78);
-  col=blob(col,p,vec2(.55*asp+.18*sin(s*.6+3.),.55+.12*cos(s*.9+1.)),R*(.48+.44*sin(s*1.1+4.)),vec3(.58,.72,1.),.70);
-  col=blob(col,p,vec2(.30*asp+.14*cos(s*.8+2.),.24+.10*sin(s*1.2+3.)),R*(.50+.42*sin(s*1.5+1.)),vec3(.62,.86,1.),.55);
-  col=blob(col,p,vec2(.72*asp+.10*sin(s*1.1+5.),.80+.06*cos(s*.7+2.)),R*(.46+.40*sin(s*1.9+3.)),vec3(1.),.85);
-  col=blob(col,p,vec2(.42*asp+.16*cos(s*.5+4.),.92+.05*sin(s*.9)),R*(.40+.36*sin(s*1.4+5.)),vec3(1.),.75);
-  col=blob(col,p,vec2(.95*asp+.08*sin(s*.9+1.),.58+.10*cos(s*1.3+4.)),R*(.38+.38*sin(s*1.6+2.)),vec3(.30,.47,.93),.6);
+  vec3 col=mix(vec3(.93,.95,1.),vec3(.99,.995,1.),uv.y);
+  col=bloom(col,p,asp,1.,15.,vec3(.62,.75,1.),.7);
+  col=bloom(col,p,asp,2.,19.,vec3(.74,.88,1.),.75);
+  col=bloom(col,p,asp,3.,17.,vec3(.55,.69,.99),.6);
+  col=bloom(col,p,asp,4.,23.,vec3(.80,.86,1.),.7);
+  col=bloom(col,p,asp,5.,21.,vec3(.68,.92,1.),.55);
   gl_FragColor=vec4(col,1.);
 }`;
     const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
