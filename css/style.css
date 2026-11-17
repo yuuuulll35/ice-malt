@@ -603,3 +603,12 @@ body.thawing .ice .aurora { opacity: 1; }
 .sheet.capturing .car { margin: 0; }
 .sheet.capturing .arms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; padding: 4px 0 0; }
 .sheet.capturing .car-nav { display: none; }
+
+/* ───────── one layout everywhere: the thought appears above the ice, like on mobile ───────── */
+.stagewrap { --ice-w: min(64vw, max(420px, calc((100dvh - 380px) * 1.5))); grid-template-columns: 1fr; justify-items: center; gap: 6px; }
+.lane-r { display: none !important; }
+.lane-l { display: flex; order: -1; min-height: 124px; width: 100%; align-items: center; justify-content: flex-end; }
+.lane-l .bubble { max-width: min(560px, 100%); }
+.lane-l .bubble::before { right: auto; left: 50%; top: auto; bottom: -7.5px; transform: translateX(-50%) rotate(45deg); border: 1px solid rgba(37, 69, 207, .22); border-left: 0; border-top: 0; }
+.ice-col { padding-top: 14px; }
+@media (min-width: 861px) and (orientation: landscape) { body.thawed .stagewrap { gap: clamp(32px, 4vw, 64px); } }

@@ -750,7 +750,7 @@ void main(){
   }
 
   function bubble(b) {
-    const single = narrow.matches;
+    const single = true;
     const lane = single ? laneL : laneR;
     const el = document.createElement('div');
     el.className = 'bubble';
