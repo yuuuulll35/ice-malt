@@ -134,7 +134,7 @@
       const dx = x - hx, dy = y - hy, d = Math.hypot(dx, dy) || 1, v = rnd(120, 460);
       shard(x, y, dx / d * v + rnd(-60, 60), dy / d * v - rnd(80, 260), rnd(5, Math.min(22, rect.width / 4)), rnd(0.7, 1.3));
     }
-    if (!reduce) for (let i = 0; i < 5; i++) spark(rect.left + Math.random() * rect.width, rect.top + Math.random() * rect.height, rnd(-50, 50), rnd(-120, -30), rnd(5, 11), rnd(0.5, 1), '#fff');
+    if (!reduce) for (let i = 0; i < 5; i++) spark(rect.left + Math.random() * rect.width, rect.top + Math.random() * rect.height, rnd(-50, 50), rnd(-120, -30), rnd(5, 11), rnd(0.5, 1), i % 2 ? '#fff' : '#ffd55e');
     kick();
   }
   function loop(now) {
@@ -157,8 +157,8 @@
         for (let j = 2; j < p.pts.length; j += 2) cx.lineTo(p.pts[j], p.pts[j + 1]);
         cx.closePath();
         cx.globalAlpha = Math.min(1, f * 2.2) * p.a;
-        cx.fillStyle = '#e4efff'; cx.fill();
-        cx.lineWidth = 1; cx.strokeStyle = '#fff'; cx.stroke();
+        cx.fillStyle = '#f6f9ff'; cx.fill();
+        cx.lineWidth = 1.3; cx.strokeStyle = '#2545cf'; cx.stroke();
         cx.restore();
       } else if (p.k === 1) {
         const s = p.s * Math.sin(f * Math.PI);
@@ -179,10 +179,24 @@
   /* ───────── ambient decor ───────── */
   (function decor() {
     const host = $('#decor'), r = seeded('frost');
+    const STAR = 'M12 0c.9 6.300 5.700 11.100 12 12-6.300.900-11.100 5.700-12 12-.900-6.300-5.700-11.100-12-12 6.300-.900 11.100-5.700 12-12Z';
+    const DOODLES = [
+      'M12 21C5 15.500 2 12 2 8a5 5 0 0 1 10-1.500A5 5 0 0 1 22 8c0 4-3 7.500-10 13Z',
+      'M12 2c4 6 7 9 7 13a7 7 0 0 1-14 0c0-4 3-7 7-13Z',
+      'M12 2v20M3.300 7l17.400 10M3.300 17L20.700 7M9 3.500l3 2.500 3-2.500M9 20.500l3-2.500 3 2.500',
+      'M12 12c0-2 3-2 3 .500s-4 3.500-6 1-1-7 3.500-7 7 4 5.500 8.500',
+      'M4 16c3-6 5 4 8-2s5 4 8-2',
+      'M12 3l2.200 6.200L20.500 9l-5 4 1.800 6.300L12 15.500 6.700 19.300 8.500 13l-5-4 6.300.200Z'
+    ];
     let html = '';
-    for (let i = 0; i < 18; i++) {
-      const s = 8 + r() * 22;
-      html += `<svg class="${i % 4 === 0 ? 'y' : ''}" viewBox="0 0 24 24" style="left:${r() * 100}%;top:${r() * 100}%;width:${s}px;--d:${3 + r() * 5}s;--dl:${-r() * 6}s"><path d="M12 0c.8 6.400 5.600 11.200 12 12-6.400.800-11.200 5.600-12 12-.800-6.400-5.600-11.200-12-12 6.400-.800 11.200-5.600 12-12Z"/></svg>`;
+    for (let i = 0; i < 16; i++) {
+      const sz = 8 + r() * 20;
+      html += `<svg class="st${i % 3 === 0 ? ' y' : ''}" viewBox="0 0 24 24" style="left:${r() * 100}%;top:${r() * 100}%;width:${sz}px;--d:${3 + r() * 5}s;--dl:${-r() * 6}s"><path d="${STAR}"/></svg>`;
+    }
+    for (let i = 0; i < 9; i++) {
+      const sz = 26 + r() * 30, edge = r() < 0.5;
+      const x = edge ? (r() < 0.5 ? r() * 16 : 84 + r() * 14) : r() * 100, y = edge ? r() * 100 : (r() < 0.5 ? r() * 12 : 88 + r() * 10);
+      html += `<svg class="dd" viewBox="0 0 24 24" style="left:${x}%;top:${y}%;width:${sz}px;transform:rotate(${(r() * 50 - 25) | 0}deg)"><path d="${DOODLES[i % DOODLES.length]}"/></svg>`;
     }
     html += '<i class="orbit" style="width:46vmax;height:46vmax;left:-14vmax;bottom:-18vmax"></i><i class="orbit" style="width:30vmax;height:30vmax;right:-8vmax;top:-10vmax"></i>';
     host.innerHTML = html;
@@ -193,17 +207,78 @@
   const hexOk = (v, fb) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(str(v)) ? str(v) : fb;
   const SHAPES = ['orb', 'heart', 'gem', 'ring', 'wave', 'thread', 'petal', 'drop', 'ray', 'dot', 'star', 'shard'];
 
-  function parse(text) {
-    let t = text.replace(/```(?:json)?/gi, '').replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-    const a = t.indexOf('{'), b = t.lastIndexOf('}');
-    if (a < 0 || b <= a) throw new Error('데이터를 찾지 못했어요. AI가 출력한 { … } 코드 블록을 통째로 붙여 넣어 주세요.');
-    t = t.slice(a, b + 1);
-    try { return JSON.parse(t); } catch {
-      try { return JSON.parse(t.replace(/,\s*([}\]])/g, '$1')); } catch {
-        throw new Error('형식이 조금 어긋나 읽을 수 없어요. 채팅에서 다시 생성한 뒤 코드 블록 전체를 복사해 주세요.');
-      }
+  const KO_SHAPES = [[/핵|불씨|빛의\s*핵/, 'orb'], [/하트|심장/, 'heart'], [/보석|원석/, 'gem'], [/고리|링|원/, 'ring'], [/물결|파문/, 'wave'], [/실타래|실|끈/, 'thread'],
+    [/꽃잎|꽃/, 'petal'], [/물방울|방울|눈물/, 'drop'], [/빛살|광선|햇살/, 'ray'], [/점|구슬|알갱이/, 'dot'], [/별/, 'star'], [/결정|조각|파편/, 'shard']];
+  const clean = t => String(t || '').replace(/```[a-z]*/gi, '').replace(/\r/g, '');
+  const isPrompt = t => /\[OOC\s*\d\/\d|잠시 역할극 중단|\[출력\]/.test(t);
+  const unwrap = s => s.replace(/^[\s"'“”‘’「」『』]+|[\s"'“”‘’「」『』]+$/g, '');
+  const KEY = /^[-*•\s]*[\[【]?\s*(대상|해동|본심|온도|보조\s*색|색상?|하트\s*컬러|컬러|형상\s*구성|구성|형상|순간|본질|속마음)\s*(\d*)\s*[\]】]?\s*([.:：)]?)\s*(.*)$/;
+
+  function rows(text) {
+    const out = [];
+    for (const raw of clean(text).split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+      const m = line.match(KEY);
+      if (m && m[4] && (m[2] || /[:：]/.test(m[3]))) out.push({ k: m[1].replace(/\s/g, ''), v: m[4].trim() });
+      else if (out.length) out[out.length - 1].v += ' ' + line;
     }
+    return out;
   }
+  const parts = v => v.split(/\s*[·•|]\s*/).map(unwrap).filter(Boolean);
+
+  function parse1(text) {
+    if (isPrompt(text)) throw new Error('OOC를 그대로 붙여 넣었어요. 채팅에 보낸 뒤 AI가 쓴 답을 복사해 주세요.');
+    const out = { balloons: [] };
+    for (const { k, v } of rows(text)) {
+      if (k === '대상') { const [a, b] = v.split(/\s*(?:\/|→|->)\s*/); out.npc = unwrap(a || ''); out.pc = unwrap(b || ''); }
+      else if (k === '해동') {
+        const tag = (v.match(/[\[(（]\s*감정\s*[:：]\s*([^\])）]*)/) || [])[1];
+        const body = (v.match(/[\[(（]\s*속마음\s*[:：]\s*([\s\S]*)$/) || [])[1];
+        const textOut = unwrap((body !== undefined ? body : v.replace(/[\[(（]\s*감정[^\])）]*[\])）]/, '')).replace(/[\])）]\s*$/, ''));
+        if (textOut) out.balloons.push({ tag: unwrap(tag || ''), text: textOut });
+      } else if (k === '본심') out.final = unwrap(v);
+    }
+    if (out.balloons.length < 3) throw new Error(out.balloons.length ? '해동 항목이 너무 적어요. 답이 중간에 끊겼다면 채팅에서 다시 받아 주세요.' : '해동 항목을 찾지 못했어요. AI가 쓴 답의 코드 블록을 통째로 복사해 주세요.');
+    const miss = [!out.npc && '대상', !out.final && '본심'].filter(Boolean);
+    if (miss.length) throw new Error(`${miss.join(', ')} 항목이 빠졌어요. 답을 처음부터 끝까지 복사했는지 확인해 주세요.`);
+    return out;
+  }
+
+  function parse2(text) {
+    if (isPrompt(text)) throw new Error('OOC를 그대로 붙여 넣었어요. 채팅에 보낸 뒤 AI가 쓴 답을 복사해 주세요.');
+    const out = { form: {}, temp: {}, color: {} };
+    for (const { k, v } of rows(text)) {
+      const ps = parts(v);
+      if (k === '온도') {
+        const head = ps[0] || '', m = head.match(/[-−+]?\s*\d[\d,]*(?:\.\d+)?/);
+        out.temp = m ? { value: m[0].replace(/\s/g, '').replace('−', '-'), unit: head.slice(m.index + m[0].length).trim() || '°C', note: ps.slice(1).join(' · ') }
+          : { value: head, unit: '', note: ps.slice(1).join(' · ') };
+      } else if (k === '색' || k === '색상' || k === '하트컬러' || k === '컬러') {
+        const hex = (v.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/i) || [])[0], rest = ps.filter(p => !/^#[0-9a-f]{3,6}$/i.test(p));
+        Object.assign(out.color, { hex, name: rest[0] || '', meaning: rest.slice(1).join(' · ') });
+      } else if (k === '보조색') out.color.sub = (v.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/i) || [])[0];
+      else if (k === '형상') { out.form.name = ps[0] || ''; out.form.desc = ps.slice(1).join(' · '); }
+      else if (k === '구성' || k === '형상구성') {
+        out.form.layers = v.split(/\s*[,，、·]\s*/).map(t => {
+          const hit = KO_SHAPES.find(([re]) => re.test(t));
+          return hit && { shape: hit[1], count: +(t.match(/\d+/) || [0])[0] };
+        }).filter(Boolean);
+      } else if (k === '순간') out.moment = unwrap(v);
+      else if (k === '본질') out.essence = unwrap(v);
+      else if (k === '속마음') out.truth = unwrap(v);
+    }
+    const miss = [!out.temp.value && '온도', !out.color.hex && '색(#RRGGBB)', !out.form.name && '형상', !out.truth && '속마음'].filter(Boolean);
+    if (miss.length === 4) throw new Error('판독 항목을 찾지 못했어요. OOC ②의 답을 코드 블록째 복사해 주세요.');
+    if (miss.length) throw new Error(`${miss.join(', ')} 항목이 빠졌어요. 답이 끊겼다면 채팅에서 다시 받아 주세요.`);
+    return out;
+  }
+  const PARSERS = [parse1, parse2];
+  const SUMMARY = [
+    d => `${d.npc} → ${d.pc} · 속마음 ${d.balloons.length}개`,
+    d => `${d.temp.value}${d.temp.unit} · ${d.color.name || d.color.hex} · ${d.form.name}`
+  ];
+
   function normalize(d) {
     if (!d || typeof d !== 'object') throw new Error('데이터 형식이 올바르지 않아요.');
     const balloons = (Array.isArray(d.balloons) ? d.balloons : [])
@@ -245,12 +320,12 @@
     };
     const around = (cnt, fn) => { let s = ''; for (let i = 0; i < cnt; i++) s += `<g transform="rotate(${f(i * 360 / cnt)})">${fn(i)}</g>`; return s; };
     let out = `<defs><radialGradient id="${uid}g"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="${hex}"/><stop offset="1" stop-color="${hex}" stop-opacity="0"/></radialGradient></defs>`;
-    out += `<circle r="96" fill="url(#${uid}g)" opacity=".28"/>`;
+    out += `<circle r="96" fill="url(#${uid}g)" opacity=".45"/>`;
     layers.forEach((l, i) => {
       const c = cols[i % 3], c2 = cols[(i + 1) % 3];
       const r = clamp(l.r === null ? (n === 1 ? 50 : 16 + i * 66 / (n - 1)) : l.r, 0, 92);
       const cnt = k => clamp(Math.round(l.count) || k, 1, 36);
-      const st = `fill="none" stroke="${c}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"`;
+      const st = `fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"`;
       let g = '', spin = true;
       switch (l.shape) {
         case 'orb': { const s = l.size || 20; spin = false;
@@ -265,7 +340,7 @@
         case 'wave': { const k = cnt(8), a = l.size || 5; g = `<path d="${polar(t => r + a * Math.sin(k * t), 180)}" ${st}/>`; break; }
         case 'thread': { const k = cnt(5); g = `<path d="${polar(t => r * (.58 + .42 * Math.cos((k + .5) * t)), 360, 2)}" ${st} stroke-width="1"/>`; break; }
         case 'petal': { const k = cnt(6), a = r * .22, w = l.size || Math.max(5, r * 2.2 / k);
-          g = around(k, () => `<path d="M0 ${f(-a)}C${f(w)} ${f(-a - (r - a) * .35)} ${f(w)} ${f(-r + (r - a) * .15)} 0 ${f(-r)}C${f(-w)} ${f(-r + (r - a) * .15)} ${f(-w)} ${f(-a - (r - a) * .35)} 0 ${f(-a)}Z" fill="${c}" fill-opacity=".3" stroke="${c}" stroke-width="1.3" stroke-linejoin="round"/>`); break; }
+          g = around(k, () => `<path d="M0 ${f(-a)}C${f(w)} ${f(-a - (r - a) * .35)} ${f(w)} ${f(-r + (r - a) * .15)} 0 ${f(-r)}C${f(-w)} ${f(-r + (r - a) * .15)} ${f(-w)} ${f(-a - (r - a) * .35)} 0 ${f(-a)}Z" fill="${c}" fill-opacity=".5" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>`); break; }
         case 'drop': { const k = cnt(6), s = l.size || 6;
           g = around(k, () => `<path d="M0 ${f(-r - s * 1.7)}C${f(s)} ${f(-r - s * .2)} ${f(s)} ${f(-r + s)} 0 ${f(-r + s)}C${f(-s)} ${f(-r + s)} ${f(-s)} ${f(-r - s * .2)} 0 ${f(-r - s * 1.7)}Z" fill="${c}" fill-opacity=".45" stroke="${c}" stroke-width="1.2"/>`); break; }
         case 'ray': { const k = cnt(12), s = l.size || 10;
@@ -546,39 +621,118 @@
     show('intro');
   }
 
-  /* ───────── wiring ───────── */
-  const dataIn = $('#dataIn'), err = $('#err');
-  const saved = store.get('icemelt:data');
-  if (saved) dataIn.value = saved;
+  /* ───────── OOC steps ───────── */
+  const STEPS = [
+    { title: '해동 기록', desc: '얼음이 깨질 때마다 새어 나올 속마음과 마지막 본심을 받습니다.', ph: '대상: … / …\n해동 1 [감정: …] (속마음: …)\n본심: …' },
+    { title: '사랑의 온도', desc: '같은 채팅에 이어서 보냅니다. 온도, 하트 컬러, 애정의 형상, 결과지 내용을 받습니다.', ph: '온도: 00.0 °C · …\n색: #RRGGBB · … · …\n형상: … · …' }
+  ];
+  const MARK = ['①', '②'];
+  const stepsEl = $('#steps'), startBtn = $('#startBtn'), lastBtn = $('#lastBtn');
+  const answers = [null, null];
 
-  $('#copyPrompt').addEventListener('click', () => copy(window.ICE_PROMPT, '프롬프트를 복사했어요. 채팅방에 붙여 넣어 주세요.'));
-  $('#startBtn').addEventListener('click', () => {
-    err.textContent = '';
-    if (!dataIn.value.trim()) { err.textContent = '먼저 AI가 출력한 해동 데이터를 붙여 넣어 주세요. 구경만 하려면 샘플로 체험할 수 있어요.'; dataIn.focus(); return; }
+  stepsEl.innerHTML = STEPS.map((st, i) => `
+    <li class="step" data-i="${i}" data-state="empty">
+      <span class="no" aria-hidden="true">${i + 1}</span>
+      <div class="step-body">
+        <div class="step-head"><h2>${st.title}</h2><span class="status" aria-live="polite"></span></div>
+        <p>${st.desc}</p>
+        <div class="acts">
+          <button class="btn" type="button" data-act="copy">OOC ${MARK[i]} 복사</button>
+          <span class="arrow" aria-hidden="true">→</span>
+          <button class="btn" type="button" data-act="paste">답 붙여넣기</button>
+        </div>
+        <textarea id="answer${i + 1}" rows="5" spellcheck="false" aria-label="${st.title} 답 직접 입력" placeholder="${st.ph.replace(/\n/g, '&#10;')}" hidden></textarea>
+        <div class="got" hidden><span class="got-text"></span><button class="link" type="button" data-act="redo">다시 넣기</button><button class="link" type="button" data-act="clear">지우기</button></div>
+        <p class="error" role="alert" hidden></p>
+        <div class="minor">
+          <button class="link" type="button" data-act="manual">직접 붙여넣기</button>
+          <button class="link" type="button" data-act="peek" aria-expanded="false">OOC 내용 보기</button>
+        </div>
+        <pre class="prompt" hidden></pre>
+      </div>
+    </li>`).join('');
+
+  const stepEl = i => stepsEl.children[i];
+  function paintSteps() {
+    STEPS.forEach((_, i) => {
+      const el = stepEl(i), done = !!answers[i], locked = i > 0 && !answers[i - 1];
+      el.dataset.state = done ? 'done' : locked ? 'locked' : 'empty';
+      $('.status', el).textContent = done ? '✓ 완료' : locked ? '앞 단계 먼저' : '대기 중';
+      $('.got', el).hidden = !done;
+      $('.acts', el).hidden = done;
+      $('.minor', el).hidden = done;
+      if (done) { $('.got-text', el).textContent = SUMMARY[i](answers[i]); $('textarea', el).hidden = true; $('.prompt', el).hidden = true; }
+      el.querySelectorAll('.acts button, .minor button').forEach(b => { b.disabled = locked; });
+    });
+    startBtn.disabled = !(answers[0] && answers[1]);
+  }
+  function fail(i, msg) { const e = $('.error', stepEl(i)); e.textContent = msg; e.hidden = !msg; }
+  function accept(i, text, quiet) {
     try {
-      const d = normalize(parse(dataIn.value));
-      store.set('icemelt:data', dataIn.value);
-      Sfx.init();
-      startPlay(d);
-    } catch (e) { err.textContent = e.message; dataIn.focus(); }
+      answers[i] = PARSERS[i](text);
+      store.set('icemelt:a' + i, text);
+      fail(i, '');
+      paintSteps();
+      if (!quiet) { toast(`${STEPS[i].title} 확인 완료`); (answers[0] && answers[1] ? startBtn : $('[data-act="copy"]', stepEl(i + 1))).focus(); }
+      return true;
+    } catch (e) { if (!quiet) fail(i, e.message); return false; }
+  }
+  function openManual(i, msg) {
+    const ta = $('textarea', stepEl(i));
+    ta.hidden = false; ta.focus();
+    if (msg) fail(i, msg);
+  }
+  stepsEl.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const el = btn.closest('.step'), i = +el.dataset.i, act = btn.dataset.act;
+    if (act === 'copy') copy(window.ICE.PROMPTS[i], `OOC ${MARK[i]}을 복사했어요. 채팅에 보내 주세요.`);
+    else if (act === 'paste') {
+      let text = '';
+      try { text = await navigator.clipboard.readText(); }
+      catch { return openManual(i, '브라우저가 클립보드 읽기를 막았어요. 아래 칸에 직접 붙여 넣어 주세요.'); }
+      if (!text.trim()) return fail(i, '클립보드가 비어 있어요. 채팅에서 AI의 답을 복사한 뒤 다시 눌러 주세요.');
+      accept(i, text);
+    } else if (act === 'manual') openManual(i);
+    else if (act === 'peek') {
+      const pre = $('.prompt', el), open = pre.hidden;
+      pre.textContent = window.ICE.PROMPTS[i]; pre.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'OOC 내용 접기' : 'OOC 내용 보기';
+    } else if (act === 'redo' || act === 'clear') {
+      for (let j = i; j < (act === 'clear' ? answers.length : i + 1); j++) { answers[j] = null; store.set('icemelt:a' + j, ''); $('textarea', stepEl(j)).value = ''; fail(j, ''); }
+      paintSteps();
+      if (act === 'redo') openManual(i);
+    }
   });
-  $('#sampleBtn').addEventListener('click', () => { err.textContent = ''; Sfx.init(); startPlay(normalize(window.ICE_SAMPLE)); });
+  stepsEl.addEventListener('input', e => {
+    if (e.target.tagName !== 'TEXTAREA') return;
+    const i = +e.target.closest('.step').dataset.i;
+    clearTimeout(e.target._t);
+    if (!e.target.value.trim()) return fail(i, '');
+    e.target._t = setTimeout(() => accept(i, e.target.value), 350);
+  });
+
+  const build = () => normalize({ ...answers[0], ...answers[1] });
+  function begin(d) { store.set('icemelt:last', JSON.stringify(d)); lastBtn.hidden = false; Sfx.init(); startPlay(d); }
+
+  [0, 1].forEach(i => { const t = store.get('icemelt:a' + i); if (t && (i === 0 || answers[0])) accept(i, t, true); });
+  paintSteps();
+  let lastData = null;
+  try { lastData = normalize(JSON.parse(store.get('icemelt:last'))); } catch { /* nothing saved */ }
+  lastBtn.hidden = !lastData;
+
+  /* ───────── wiring ───────── */
+  startBtn.addEventListener('click', () => { try { begin(build()); } catch (e) { toast(e.message); } });
+  $('#sampleBtn').addEventListener('click', () => { Sfx.init(); startPlay(normalize({ ...parse1(window.ICE.SAMPLE[0]), ...parse2(window.ICE.SAMPLE[1]) })); });
+  lastBtn.addEventListener('click', () => {
+    let d = null;
+    try { d = normalize(JSON.parse(store.get('icemelt:last'))); } catch { /* fall through */ }
+    if (d) { Sfx.init(); startPlay(d); } else toast('저장된 해동 기록이 없어요.');
+  });
   $('#toResult').addEventListener('click', () => { Sfx.ui(); showResult(); });
   $('#againBtn').addEventListener('click', () => startPlay(state.data));
   $('#newBtn').addEventListener('click', goHome);
   $('#homeBtn').addEventListener('click', goHome);
   $('#copyResult').addEventListener('click', () => copy(resultText(), '결과를 복사했어요.'));
   addEventListener('resize', () => { if (body.dataset.screen === 'play') state.heartRect = (state.done ? ice : $('#ice .heart')).getBoundingClientRect(); });
-
-  // intro preview: a half-thawed block of ice
-  (function preview() {
-    const host = $('#previewIce'), wrap = document.createElement('div');
-    wrap.className = 'blocks';
-    host.appendChild(wrap);
-    const [c, r] = narrow.matches ? [3, 4] : [4, 3];
-    buildIce(wrap, c, r, false).forEach((b, i) => {
-      if (i % 5 === 1) return b.el.remove();
-      if (i % 3 === 0) { addCrack(b, rnd(20, 80), rnd(20, 80)); b.el.style.setProperty('--dmg', '.4'); }
-    });
-  })();
 })();

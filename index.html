@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ICE MELT — 마음의 해동</title>
-<meta name="description" content="얼음 아래 잠들어 있던 마음을 깨우는 감정 진단 시뮬레이션">
-<meta name="theme-color" content="#dfeaff">
+<meta name="description" content="얼음 아래 잠들어 있던 마음을 깨우는 OOC 감정 진단 뷰어">
+<meta name="theme-color" content="#d6e4ff">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Unbounded:wght@300;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Hahmlet:wght@400;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=Martian+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-screen="intro">
@@ -23,8 +23,8 @@
 
 <header class="bar">
   <button class="brand" id="homeBtn" type="button" aria-label="처음 화면으로">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.9 5.6 4.9 9.6 10.5 10.5C16.9 12.900 12.900 16.900 12 22.500 11.100 16.900 7.100 12.900 1.500 12 7.100 11.100 11.100 7.100 12 1.500Z"/></svg>
-    <span>ICE&nbsp;MELT</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1c.9 6 5 10.100 11 11-6 .900-10.100 5-11 11-.900-6-5-10.100-11-11 6-.900 10.100-5 11-11Z"/></svg>
+    <span>ICE MELT</span>
   </button>
   <div class="bar-right">
     <span class="bar-pair" id="barPair"></span>
@@ -40,70 +40,53 @@
 
 <main>
 
-  <!-- ───────────── INTRO ───────────── -->
   <section class="screen intro" id="intro" aria-labelledby="introTitle">
     <div class="intro-hero">
-      <p class="eyebrow">Emotional thaw simulation</p>
-      <h1 id="introTitle" class="title"><span>ICE</span><span class="title-melt">MELT</span></h1>
+      <p class="label">Emotional thaw simulation · No. 01</p>
+      <h1 id="introTitle" class="title">
+        <span class="t-ice">ICE</span>
+        <span class="t-melt">MELT<i class="drip d1"></i><i class="drip d2"></i><i class="drip d3"></i></span>
+      </h1>
       <p class="subtitle">마음의 해동</p>
-      <p class="lead">얼음은 차가운 마음이 아니에요.<br>그 아래, 당신을 향해 조금씩 쌓여 온 마음이 잠들어 있을 뿐.</p>
-      <div class="preview" aria-hidden="true">
-        <div class="ice ice-preview" id="previewIce">
-          <svg class="heart" viewBox="0 0 100 92"><path d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z"/></svg>
-        </div>
-      </div>
+      <p class="lead">얼음은 차가운 마음이 아니에요. 그 아래, 당신을 향해 조금씩 쌓여 온 마음이 잠들어 있을 뿐. 얼음을 두드려 깨우면 NPC의 속마음이 한 조각씩 새어 나옵니다.</p>
     </div>
 
     <div class="intro-panel">
-      <ol class="steps">
-        <li>
-          <span class="step-n">01</span>
-          <div>
-            <strong>진단 프롬프트 복사</strong>
-            <p>진행 중인 채팅방에 붙여 넣으면, AI가 두 사람의 서사를 읽고 해동 데이터를 써 줍니다.</p>
-            <button class="btn ghost" id="copyPrompt" type="button">프롬프트 복사</button>
-          </div>
-        </li>
-        <li>
-          <span class="step-n">02</span>
-          <div>
-            <strong>받은 결과 붙여넣기</strong>
-            <p>AI가 출력한 코드 블록을 통째로 넣어 주세요.</p>
-            <label class="sr" for="dataIn">해동 데이터</label>
-            <textarea id="dataIn" spellcheck="false" placeholder='{ "npc": "…", "pc": "…", "balloons": [ … ] }'></textarea>
-            <p class="err" id="err" role="alert"></p>
-          </div>
-        </li>
-        <li>
-          <span class="step-n">03</span>
-          <div>
-            <strong>얼음 깨기</strong>
-            <div class="row">
-              <button class="btn primary" id="startBtn" type="button">해동 시작</button>
-              <button class="btn ghost" id="sampleBtn" type="button">샘플로 체험</button>
-            </div>
-          </div>
-        </li>
-      </ol>
+      <ol class="steps" id="steps"></ol>
+      <div class="go">
+        <button class="btn primary" id="startBtn" type="button" disabled>해동 시작</button>
+        <button class="btn" id="sampleBtn" type="button">예시로 보기</button>
+        <button class="link" id="lastBtn" type="button" hidden>지난 해동 다시 보기</button>
+      </div>
     </div>
   </section>
 
-  <!-- ───────────── PLAY ───────────── -->
   <section class="screen play" id="play" hidden aria-label="얼음 깨기">
-    <p class="play-pair"><span id="pNpc"></span><i aria-hidden="true"></i><span id="pPc"></span></p>
+    <p class="pair"><span id="pNpc"></span><i aria-hidden="true"></i><span id="pPc"></span></p>
 
     <div class="stagewrap">
       <div class="lane lane-l" id="laneL"></div>
 
       <div class="ice-col">
         <div class="ice" id="ice">
-          <span class="tick t1"></span><span class="tick t2"></span><span class="tick t3"></span><span class="tick t4"></span>
-          <svg class="heart" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z"/></svg>
+          <svg class="deco" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <circle cx="150" cy="100" r="62"/><circle cx="150" cy="100" r="88"/><circle cx="40" cy="30" r="22"/><circle cx="262" cy="168" r="30"/>
+            <g class="stars">
+              <path d="M52 150q1 9 10 10-9 1-10 10-1-9-10-10 9-1 10-10Z"/><path d="M246 36q1.500 12 13.500 13.500-12 1.500-13.500 13.500-1.500-12-13.500-13.500 12-1.500 13.500-13.500Z"/>
+              <path d="M92 28q.800 6 6.800 6.800-6 .800-6.800 6.800-.800-6-6.800-6.800 6-.800 6.800-6.800Z"/><path d="M214 152q.800 6 6.800 6.800-6 .800-6.800 6.800-.800-6-6.800-6.800 6-.800 6.800-6.800Z"/>
+              <path d="M24 92q.600 5 5.600 5.600-5 .600-5.600 5.600-.600-5-5.600-5.600 5-.600 5.600-5.600Z"/><path d="M280 96q.600 5 5.600 5.600-5 .600-5.600 5.600-.600-5-5.600-5.600 5-.600 5.600-5.600Z"/>
+            </g>
+          </svg>
+          <svg class="heart" viewBox="-8 -8 116 108" aria-hidden="true">
+            <defs><radialGradient id="hg" cx="38%" cy="30%" r="80%"><stop offset="0" class="h0"/><stop offset=".45" class="h1"/><stop offset="1" class="h2"/></radialGradient></defs>
+            <path class="hb" d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z"/>
+            <path class="hs" d="M17 28c1-8 6-13 13-14"/>
+          </svg>
           <svg class="emblem" id="emblem" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
           <div class="blocks" id="blocks"></div>
         </div>
         <div class="hud">
-          <span class="hud-count" id="hudCount"></span>
+          <span class="label" id="hudCount"></span>
           <span class="hud-hint" id="hudHint">얼음을 연타해 잠든 마음을 깨워 주세요</span>
         </div>
       </div>
@@ -111,7 +94,7 @@
       <div class="lane lane-r" id="laneR"></div>
 
       <div class="manifest" id="manifest">
-        <p class="eyebrow">Heart manifestation</p>
+        <p class="label">Heart manifestation</p>
         <h2 id="mName"></h2>
         <p class="m-desc" id="mDesc"></p>
         <blockquote id="mFinal"></blockquote>
@@ -121,24 +104,22 @@
     <div class="sr" aria-live="polite" id="live"></div>
   </section>
 
-  <!-- ───────────── RESULT ───────────── -->
   <section class="screen result" id="result" hidden aria-label="결과지">
     <article class="sheet" id="sheet">
       <header class="sh-top">
         <div>
-          <p class="eyebrow">Ice melt report</p>
-          <h2>Temperature of Love</h2>
+          <p class="label">Ice melt report</p>
+          <h2>사랑의 온도</h2>
         </div>
         <div class="sh-meta">
-          <p class="sh-pair"><span id="rNpc"></span><i aria-hidden="true"></i><span id="rPc"></span></p>
-          <p class="sh-date" id="rDate"></p>
+          <p class="pair"><span id="rNpc"></span><i aria-hidden="true"></i><span id="rPc"></span></p>
+          <p class="label" id="rDate"></p>
         </div>
       </header>
 
       <div class="sh-grid">
         <div class="sh-visual">
           <div class="window">
-            <span class="tick t1"></span><span class="tick t2"></span><span class="tick t3"></span><span class="tick t4"></span>
             <svg class="emblem on" id="emblemR" viewBox="-100 -100 200 200" role="img" aria-label="애정의 형상"></svg>
           </div>
           <section class="item">
@@ -158,10 +139,10 @@
             <section class="item color">
               <h3><b>02</b>하트 컬러</h3>
               <div class="chip">
-                <svg viewBox="0 0 100 92" aria-hidden="true"><path d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z"/></svg>
+                <svg viewBox="-6 -6 112 104" aria-hidden="true"><path d="M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z"/></svg>
                 <div>
                   <p class="color-name" id="rColorName"></p>
-                  <p class="color-hex" id="rColorHex"></p>
+                  <p class="label" id="rColorHex"></p>
                 </div>
               </div>
               <p id="rColorMean"></p>
@@ -183,15 +164,15 @@
       </div>
 
       <details class="sh-log">
-        <summary>해동 기록 — 얼음 사이로 새어 나온 말들 <span id="rLogN"></span></summary>
+        <summary>해동 기록 · 얼음 사이로 새어 나온 말들 <span id="rLogN"></span></summary>
         <ol id="rLog"></ol>
       </details>
     </article>
 
-    <div class="row result-actions">
+    <div class="go result-actions">
       <button class="btn primary" id="againBtn" type="button">다시 깨기</button>
-      <button class="btn ghost" id="copyResult" type="button">결과 텍스트 복사</button>
-      <button class="btn ghost" id="newBtn" type="button">새 진단</button>
+      <button class="btn" id="copyResult" type="button">결과 텍스트 복사</button>
+      <button class="btn" id="newBtn" type="button">새 진단</button>
     </div>
   </section>
 </main>
