@@ -518,13 +518,13 @@
 
   function bubble(b) {
     const single = narrow.matches;
-    const lane = single ? laneL : (state.side++ % 2 ? laneR : laneL);
+    const lane = single ? laneL : laneR;
     const el = document.createElement('div');
     el.className = 'bubble';
     if (b.tag) { const t = document.createElement('b'); t.textContent = b.tag; el.appendChild(t); }
     el.appendChild(document.createTextNode(b.text));
     const live = [...lane.children].filter(c => !c.classList.contains('out'));
-    const keep = single ? 0 : 1;
+    const keep = single ? 0 : 2;
     live.slice(0, Math.max(0, live.length - keep)).forEach(dismiss);
     if (single) [...lane.children].forEach(c => c.remove());
     lane.appendChild(el);
