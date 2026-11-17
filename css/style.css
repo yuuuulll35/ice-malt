@@ -308,6 +308,16 @@ body.thawing .ice::before { opacity: 1; }
 .orbs i:last-child { right: 0; bottom: 0; width: 30px; height: 30px; background: radial-gradient(circle at 35% 30%, #fff 0, var(--heart2) 42%, color-mix(in oklab, var(--heart2) 55%, #0b1030) 100%); }
 .item .color-name { font-weight: 600; font-size: 18px; line-height: 1.4; color: #fff; }
 .item .form-name { font-weight: 600; font-size: 22px; line-height: 1.4; margin-bottom: 4px; color: #fff; }
+.emblem .marks text { font: italic 400 8px "Bodoni Moda", serif; fill: #fff; opacity: .9; }
+.window .emblem { height: 76%; }
+.light { display: flex; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: var(--rule); font-size: 14.5px !important; }
+.light span:first-child { flex: none; font: 400 10px/2.6 var(--f-mono); letter-spacing: .14em; color: var(--ink); }
+.arms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 26px; }
+.arms li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.arms li > b { font: italic 400 15px/1 "Bodoni Moda", serif; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #fff; color: #0b1030; margin-top: 2px; }
+.arms .arm-name { font-weight: 600; font-size: 16px; line-height: 1.5; color: #fff; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.arms .arm-style { font: 400 10px/1.6 var(--f-mono); letter-spacing: .06em; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; }
+.arms li p + p { font-size: 14.5px; line-height: 1.75; margin-top: 2px; }
 .truth { background: radial-gradient(80% 120% at 0% 100%, color-mix(in oklab, var(--tint) 24%, transparent) 0, transparent 70%); }
 .truth p { font-size: clamp(16.5px, 1.45vw, 19px); line-height: 1.9; color: #fff; }
 .sh-log { border-top: var(--rule); padding: 6px clamp(18px, 2.4vw, 28px) 14px; }
@@ -348,6 +358,7 @@ body.thawing .ice::before { opacity: 1; }
   .sh-visual { grid-template-columns: 1fr; }
   .window { border-right: 0; border-bottom: var(--rule); }
   .duo { grid-template-columns: 1fr; }
+  .arms { grid-template-columns: 1fr; }
   .duo > * + * { border-left: 0; border-top: var(--rule); }
   .bar-pair { display: none; }
   .step { grid-template-columns: 1fr; gap: 6px; }

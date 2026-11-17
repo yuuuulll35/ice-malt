@@ -216,15 +216,14 @@
 
   /* ───────── data ───────── */
   const str = (v, max = 600) => (typeof v === 'string' || typeof v === 'number') ? String(v).trim().slice(0, max) : '';
-  const hexOk = (v, fb) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(str(v)) ? str(v) : fb;
-  const SHAPES = ['orb', 'heart', 'gem', 'ring', 'wave', 'thread', 'petal', 'drop', 'ray', 'dot', 'star', 'shard'];
-
-  const KO_SHAPES = [[/핵|불씨|빛의\s*핵/, 'orb'], [/하트|심장/, 'heart'], [/보석|원석/, 'gem'], [/고리|링|원/, 'ring'], [/물결|파문/, 'wave'], [/실타래|실|끈/, 'thread'],
-    [/꽃잎|꽃/, 'petal'], [/물방울|방울|눈물/, 'drop'], [/빛살|광선|햇살/, 'ray'], [/점|구슬|알갱이/, 'dot'], [/별/, 'star'], [/결정|조각|파편/, 'shard']];
+  const STYLES = [[/깃|고사리|솜/, 'feather'], [/곧|바늘|직선|선/, 'needle'], [/판|육각|면|유리/, 'plate'], [/가시|창|칼|날/, 'spike'], [/이슬|구슬|방울|물/, 'dew']];
+  const STYLE_KO = { feather: '깃털', needle: '곧음', plate: '판', spike: '가시', dew: '이슬' };
   const clean = t => String(t || '').replace(/```[a-z]*/gi, '').replace(/\r/g, '');
   const isPrompt = t => /\[OOC\s*\d\/\d|잠시 역할극 중단|\[출력\]/.test(t);
   const unwrap = s => s.replace(/^[\s"'“”‘’「」『』]+|[\s"'“”‘’「」『』]+$/g, '');
-  const KEY = /^[-*•\s]*[\[【]?\s*(대상|해동|본심|온도|보조\s*색|색상?|하트\s*컬러|컬러|형상\s*구성|구성|형상|순간|본질|속마음)\s*(\d*)\s*[\]】]?\s*([.:：)]?)\s*(.*)$/;
+  const KEY = /^[-*•\s]*[\[【]?\s*(대상|해동|본심|결정|핵|가지|빛깔|얼린\s*이유|녹지\s*않는\s*이유|속마음)\s*(\d*)\s*[\]】]?\s*([.:：)]?)\s*(.*)$/;
+  const field = (v, name) => { const m = v.match(new RegExp('[\\[(（]\\s*' + name + '\\s*[:：]\\s*([^\\])）]*)')); return m ? unwrap(m[1]) : ''; };
+  const tail = (v, name) => { const m = v.match(new RegExp('[\\[(（]\\s*' + name + '\\s*[:：]\\s*([\\s\\S]*)$')); return m ? unwrap(m[1].replace(/[\])）]\s*$/, '')) : ''; };
 
   function rows(text) {
     const out = [];
@@ -238,17 +237,16 @@
     return out;
   }
   const parts = v => v.split(/\s*[·•|]\s*/).map(unwrap).filter(Boolean);
+  const PASTED = 'OOC를 그대로 붙여 넣었어요. 채팅에 보낸 뒤 AI가 쓴 답을 복사해 주세요.';
 
   function parse1(text) {
-    if (isPrompt(text)) throw new Error('OOC를 그대로 붙여 넣었어요. 채팅에 보낸 뒤 AI가 쓴 답을 복사해 주세요.');
+    if (isPrompt(text)) throw new Error(PASTED);
     const out = { balloons: [] };
     for (const { k, v } of rows(text)) {
       if (k === '대상') { const [a, b] = v.split(/\s*(?:\/|→|->)\s*/); out.npc = unwrap(a || ''); out.pc = unwrap(b || ''); }
       else if (k === '해동') {
-        const tag = (v.match(/[\[(（]\s*감정\s*[:：]\s*([^\])）]*)/) || [])[1];
-        const body = (v.match(/[\[(（]\s*속마음\s*[:：]\s*([\s\S]*)$/) || [])[1];
-        const textOut = unwrap((body !== undefined ? body : v.replace(/[\[(（]\s*감정[^\])）]*[\])）]/, '')).replace(/[\])）]\s*$/, ''));
-        if (textOut) out.balloons.push({ tag: unwrap(tag || ''), text: textOut });
+        const body = tail(v, '속마음') || unwrap(v.replace(/[\[(（]\s*감정[^\])）]*[\])）]/, ''));
+        if (body) out.balloons.push({ tag: field(v, '감정'), text: body });
       } else if (k === '본심') out.final = unwrap(v);
     }
     if (out.balloons.length < 3) throw new Error(out.balloons.length ? '해동 항목이 너무 적어요. 답이 중간에 끊겼다면 채팅에서 다시 받아 주세요.' : '해동 항목을 찾지 못했어요. AI가 쓴 답의 코드 블록을 통째로 복사해 주세요.');
@@ -258,130 +256,88 @@
   }
 
   function parse2(text) {
-    if (isPrompt(text)) throw new Error('OOC를 그대로 붙여 넣었어요. 채팅에 보낸 뒤 AI가 쓴 답을 복사해 주세요.');
-    const out = { form: {}, temp: {}, color: {} };
+    if (isPrompt(text)) throw new Error(PASTED);
+    const c = { arms: [] };
     for (const { k, v } of rows(text)) {
       const ps = parts(v);
-      if (k === '온도') {
-        const head = ps[0] || '', m = head.match(/[-−+]?\s*\d[\d,]*(?:\.\d+)?/);
-        out.temp = m ? { value: m[0].replace(/\s/g, '').replace('−', '-'), unit: head.slice(m.index + m[0].length).trim() || '°C', note: ps.slice(1).join(' · ') }
-          : { value: head, unit: '', note: ps.slice(1).join(' · ') };
-      } else if (k === '색' || k === '색상' || k === '하트컬러' || k === '컬러') {
-        const hex = (v.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/i) || [])[0], rest = ps.filter(p => !/^#[0-9a-f]{3,6}$/i.test(p));
-        Object.assign(out.color, { hex, name: rest[0] || '', meaning: rest.slice(1).join(' · ') });
-      } else if (k === '보조색') out.color.sub = (v.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/i) || [])[0];
-      else if (k === '형상') { out.form.name = ps[0] || ''; out.form.desc = ps.slice(1).join(' · '); }
-      else if (k === '구성' || k === '형상구성') {
-        out.form.layers = v.split(/\s*[,，、·]\s*/).map(t => {
-          const hit = KO_SHAPES.find(([re]) => re.test(t));
-          return hit && { shape: hit[1], count: +(t.match(/\d+/) || [0])[0] };
-        }).filter(Boolean);
-      } else if (k === '순간') out.moment = unwrap(v);
-      else if (k === '본질') out.essence = unwrap(v);
-      else if (k === '속마음') out.truth = unwrap(v);
+      if (k === '결정') { c.name = ps[0] || ''; c.desc = ps.slice(1).join(' · '); }
+      else if (k === '핵') c.core = unwrap(v);
+      else if (k === '가지') {
+        const name = field(v, '이름'), len = +(field(v, '길이').match(/\d+(?:\.\d+)?/) || [0])[0];
+        if (name) c.arms.push({ name, len, style: field(v, '결'), desc: tail(v, '설명') });
+      } else if (k === '빛깔') c.light = { name: ps[0] || '', meaning: ps.slice(1).join(' · ') };
+      else if (k === '얼린이유') c.frozen = unwrap(v);
+      else if (k === '녹지않는이유') c.lasting = unwrap(v);
+      else if (k === '속마음') c.truth = unwrap(v);
     }
-    const miss = [!out.temp.value && '온도', !out.color.hex && '색(#RRGGBB)', !out.form.name && '형상', !out.truth && '속마음'].filter(Boolean);
-    if (miss.length === 4) throw new Error('판독 항목을 찾지 못했어요. OOC ②의 답을 코드 블록째 복사해 주세요.');
+    const miss = [!c.name && '결정', !c.core && '핵', c.arms.length < 6 && `가지(${c.arms.length}/6)`, !c.truth && '속마음'].filter(Boolean);
+    if (!c.name && !c.core && !c.arms.length) throw new Error('감정서 항목을 찾지 못했어요. OOC ②의 답을 코드 블록째 복사해 주세요.');
     if (miss.length) throw new Error(`${miss.join(', ')} 항목이 빠졌어요. 답이 끊겼다면 채팅에서 다시 받아 주세요.`);
-    return out;
+    return { crystal: c };
   }
   const PARSERS = [parse1, parse2];
   const SUMMARY = [
     d => `${d.npc} → ${d.pc} · 속마음 ${d.balloons.length}개`,
-    d => `${d.temp.value}${d.temp.unit} · ${d.color.name || d.color.hex} · ${d.form.name}`
+    d => `${d.crystal.name} · 가지 ${d.crystal.arms.length}개`
   ];
 
   function normalize(d) {
     if (!d || typeof d !== 'object') throw new Error('데이터 형식이 올바르지 않아요.');
-    const balloons = (Array.isArray(d.balloons) ? d.balloons : [])
-      .map(b => typeof b === 'string' ? { tag: '', text: str(b, 300) } : { tag: str(b && b.tag, 16), text: str(b && b.text, 300) })
-      .filter(b => b.text).slice(0, 16);
-    if (balloons.length < 2) throw new Error('속마음 말풍선(balloons)이 비어 있어요. 채팅에서 다시 생성해 주세요.');
-    const f = d.form || {}, t = d.temp || {}, c = d.color || {};
-    const layers = (Array.isArray(f.layers) ? f.layers : []).map(l => {
-      if (typeof l === 'string') { const [s, n] = l.split(':'); l = { shape: s, count: +n }; }
-      l = l || {};
-      return { shape: str(l.shape, 12).toLowerCase(), count: +l.count || 0, r: Number.isFinite(+l.r) && l.r !== null && l.r !== undefined && l.r !== '' ? +l.r : null, size: +l.size || 0 };
-    }).filter(l => SHAPES.includes(l.shape)).slice(0, 7);
+    const balloons = (Array.isArray(d.balloons) ? d.balloons : []).map(b => ({ tag: str(b && b.tag, 16), text: str(b && b.text, 300) })).filter(b => b.text).slice(0, 16);
+    if (balloons.length < 2) throw new Error('속마음이 비어 있어요. 채팅에서 다시 받아 주세요.');
+    const c = d.crystal || {}, light = c.light || {};
+    const rng = seeded(str(c.name) + str(d.npc)), keys = Object.keys(STYLE_KO);
+    const arms = (Array.isArray(c.arms) ? c.arms : []).slice(0, 6).map(a => {
+      const hit = STYLES.find(([re]) => re.test(str(a && a.style, 12)));
+      return { name: str(a && a.name, 40), len: clamp(+(a && a.len) || 6, 1, 10), style: hit ? hit[1] : keys[rng() * keys.length | 0], desc: str(a && a.desc, 300) };
+    });
+    while (arms.length < 6) arms.push({ name: '', len: 3 + (rng() * 5 | 0), style: keys[rng() * keys.length | 0], desc: '' });
     return {
-      npc: str(d.npc, 40) || 'NPC', pc: str(d.pc, 40) || 'PC',
-      balloons,
+      npc: str(d.npc, 40) || 'NPC', pc: str(d.pc, 40) || 'PC', balloons,
       final: str(d.final, 300) || balloons[balloons.length - 1].text,
-      form: { name: str(f.name, 60) || '이름 없는 형상', desc: str(f.desc, 400), layers },
-      temp: { value: str(t.value, 12) || '—', unit: str(t.unit, 6), note: str(t.note, 300) },
-      color: { name: str(c.name, 40) || '이름 없는 색', hex: hexOk(c.hex, '#FF9FBF'), sub: hexOk(c.sub, '#FFE2A8'), meaning: str(c.meaning, 300) },
-      moment: str(d.moment), essence: str(d.essence), truth: str(d.truth)
+      crystal: { name: str(c.name, 60) || '이름 없는 결정', desc: str(c.desc, 400), core: str(c.core), arms,
+        light: { name: str(light.name, 40), meaning: str(light.meaning, 300) }, frozen: str(c.frozen), lasting: str(c.lasting), truth: str(c.truth) }
     };
   }
 
-  /* ───────── emblem: one clear motif per ring, nothing overlapping ───────── */
-  function emblem(svg, data, uid) {
-    const BLUE = '#9dbcff', WHITE = '#ffffff';
-    const CORES = ['orb', 'heart', 'gem', 'star'];
-    let layers = data.form.layers.slice();
-    if (!layers.length) {
-      const rng = seeded(data.form.name + data.npc), pool = ['petal', 'star', 'drop', 'shard', 'ray', 'dot', 'wave'];
-      layers = [{ shape: 'orb' }, { shape: pool[rng() * pool.length | 0], count: 5 + (rng() * 3 | 0) }, { shape: pool[rng() * pool.length | 0], count: 6 + (rng() * 6 | 0) }];
-    }
-    if (!CORES.includes(layers[0].shape)) layers.unshift({ shape: 'orb' });
-    layers = layers.slice(0, 4);
-    const f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
-    const around = (cnt, fn) => { let o = ''; for (let i = 0; i < cnt; i++) o += `<g transform="rotate(${f(i * 360 / cnt)})">${fn(i)}</g>`; return o; };
-    const spark = (sz, t = 0.12) => { const k = sz * t; return `M0 ${f(-sz)}Q${f(k)} ${f(-k)} ${f(sz)} 0Q${f(k)} ${f(k)} 0 ${f(sz)}Q${f(-k)} ${f(k)} ${f(-sz)} 0Q${f(-k)} ${f(-k)} 0 ${f(-sz)}Z`; };
-    const star = (sz, t) => `<path d="${spark(sz, t)}" fill="${WHITE}"/>`;
-    const HEART = 'M50 90C22 68 4 51 4 30 4 15 15 4 29 4c9 0 17 5 21 13C54 9 62 4 71 4c14 0 25 11 25 26 0 21-18 38-46 60Z';
-    const line = `fill="none" stroke="${WHITE}" stroke-linecap="round" stroke-linejoin="round"`;
-
-    let out = `<defs>
-      <radialGradient id="${U('g')}"><stop offset="0" stop-color="${BLUE}" stop-opacity=".9"/><stop offset=".6" stop-color="${BLUE}" stop-opacity=".28"/><stop offset="1" stop-color="${BLUE}" stop-opacity="0"/></radialGradient>
-      <radialGradient id="${U('o')}" cx="36%" cy="32%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#dfe9ff"/><stop offset="1" stop-color="#7f9ff5"/></radialGradient>
-      <linearGradient id="${U('f')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${BLUE}" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity=".95"/></linearGradient>
+  /* ───────── snowflake: six arms, each grown from one way of loving ───────── */
+  function snowflake(svg, data, uid, labels) {
+    const WHITE = '#ffffff', BLUE = '#9dbcff', f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
+    const ln = (w = 1.7) => `fill="none" stroke="${WHITE}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+    const ice = `fill="url(#${U('f')})" stroke="${WHITE}" stroke-width="1.1" stroke-linejoin="round"`;
+    const hex = (cy, r) => { let d = ''; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; d += (i ? 'L' : 'M') + f(Math.sin(a) * r) + ' ' + f(cy - Math.cos(a) * r); } return d + 'Z'; };
+    const twig = (y, b, w) => { const dx = b * 0.866, dy = b * 0.5; return `<path d="M${f(-dx)} ${f(y - dy)}L0 ${f(y)}L${f(dx)} ${f(y - dy)}" ${ln(w)}/>`; };
+    const spark = (cy, sz) => { const k = sz * 0.14; return `<path transform="translate(0 ${f(cy)})" d="M0 ${f(-sz)}Q${f(k)} ${f(-k)} ${f(sz)} 0Q${f(k)} ${f(k)} 0 ${f(sz)}Q${f(-k)} ${f(k)} ${f(-sz)} 0Q${f(-k)} ${f(-k)} 0 ${f(-sz)}Z" fill="${WHITE}"/>`; };
+    const arm = a => {
+      const L = 38 + a.len * 4.6;
+      let g = `<path d="M0 -11L0 ${f(-L)}" ${ln(2)}/>`;
+      const at = t => -11 - (L - 11) * t;
+      if (a.style === 'feather') [0.22, 0.38, 0.54, 0.7, 0.84].forEach((t, i) => { g += twig(at(t), L * 0.3 * (1 - t * 0.7), i < 3 ? 1.6 : 1.2); });
+      else if (a.style === 'needle') { g += twig(at(0.42), L * 0.13, 1.5) + twig(at(0.72), L * 0.1, 1.3) + `<path d="${hex(-L, 3.2)}" fill="${WHITE}"/>`; }
+      else if (a.style === 'plate') { g += twig(at(0.28), L * 0.2, 1.5) + `<path d="${hex(at(0.6), L * 0.13)}" ${ice}/><path d="${hex(-L, L * 0.085)}" ${ice}/>`; }
+      else if (a.style === 'spike') { g += twig(at(0.32), L * 0.26, 1.6) + twig(at(0.58), L * 0.17, 1.4) + spark(-L, L * 0.13); }
+      else { const dot = (y, b, r) => `<circle cx="${f(-b * 0.866)}" cy="${f(y - b * 0.5)}" r="${r}" fill="${WHITE}"/><circle cx="${f(b * 0.866)}" cy="${f(y - b * 0.5)}" r="${r}" fill="${WHITE}"/>`;
+        g += twig(at(0.36), L * 0.22, 1.5) + dot(at(0.36), L * 0.22, 2.3) + twig(at(0.64), L * 0.15, 1.3) + dot(at(0.64), L * 0.15, 1.8) + `<circle cy="${f(-L)}" r="3.6" ${ice}/>`; }
+      return { g, L };
+    };
+    let flake = '', marks = '';
+    data.crystal.arms.forEach((a, i) => {
+      const { g, L } = arm(a), ang = i * 60;
+      flake += `<g transform="rotate(${ang})">${g}</g>`;
+      const r = Math.min(L + 9, 95), rad = ang * Math.PI / 180;
+      if (labels && a.name) marks += `<text x="${f(Math.sin(rad) * r)}" y="${f(-Math.cos(rad) * r + 2.6)}" text-anchor="middle">${i + 1}</text>`;
+    });
+    let seeds = '';
+    for (let i = 0; i < 6; i++) seeds += `<circle transform="rotate(${i * 60 + 30})" cy="-21" r="1.3" fill="${WHITE}"/>`;
+    svg.innerHTML = `<defs>
+      <radialGradient id="${U('g')}"><stop offset="0" stop-color="${BLUE}" stop-opacity=".85"/><stop offset=".6" stop-color="${BLUE}" stop-opacity=".25"/><stop offset="1" stop-color="${BLUE}" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${U('f')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${BLUE}" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity=".95"/></linearGradient>
       <filter id="${U('n')}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.2 -.75" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
     </defs>
-    <g class="ly" style="--i:0">
-      <circle r="70" fill="url(#${U('g')})" opacity=".4"/><circle r="70" fill="url(#${U('g')})" filter="url(#${U('n')})"/>
-      <g transform="rotate(-20)"><ellipse rx="93" ry="25" ${line} stroke-width=".7" opacity=".55"/><circle cx="-88" cy="-8" r="3.2" fill="url(#${U('o')})"/></g>
-      <g transform="translate(66 -62)">${star(12)}</g><g transform="translate(-74 44)">${star(7)}</g><g transform="translate(-52 -74)">${star(4)}</g>
-      <circle cx="80" cy="34" r="1.3" fill="${WHITE}"/><circle cx="-30" cy="84" r="1" fill="${WHITE}"/><circle cx="34" cy="-86" r="1" fill="${WHITE}"/>
-    </g>`;
-
-    const core = l => {
-      switch (l.shape) {
-        case 'heart': return `<g transform="scale(.36) translate(-50 -46)"><path d="${HEART}" fill="url(#${U('o')})" stroke="${WHITE}" stroke-width="3" stroke-linejoin="round"/><path d="M17 28c1-8 6-13 13-14" ${line} stroke-width="4"/></g>`;
-        case 'gem': return `<path d="M-15 -6L-8 -15H8L15 -6L0 17Z" fill="url(#${U('o')})" stroke="${WHITE}" stroke-width="1" stroke-linejoin="round"/><path d="M-15 -6H15M-8 -15L-5 -6L0 17L5 -6L8 -15M0 -15V-6" ${line} stroke-width=".7" stroke="#6f8fe8"/>`;
-        case 'star': return `<path d="${spark(15, 0.2)}" transform="rotate(45)" fill="${WHITE}" opacity=".8"/>${star(30, 0.1)}`;
-        default: return `<circle r="12" fill="url(#${U('o')})"/><path d="M-7 -3A8 8 0 0 1 -2 -8" ${line} stroke-width="1.4"/>${star(26, 0.07)}`;
-      }
-    };
-    const band = (l, r, z) => {
-      const n = (def, max) => clamp(Math.round(l.count) || def, 1, max);
-      switch (l.shape) {
-        case 'petal': { const k = n(6, 8), a = r - 17 * z, t = r + 15 * z, w = Math.min(r * 2.6 / k, 12 * z);
-          return around(k, () => `<path d="M0 ${f(-a)}C${f(w)} ${f(-a - (t - a) * 0.3)} ${f(w)} ${f(-t + (t - a) * 0.15)} 0 ${f(-t)}C${f(-w)} ${f(-t + (t - a) * 0.15)} ${f(-w)} ${f(-a - (t - a) * 0.3)} 0 ${f(-a)}Z" fill="url(#${U('f')})" stroke="${WHITE}" stroke-width=".8" stroke-linejoin="round"/>`); }
-        case 'star': return around(n(4, 8), j => `<g transform="translate(0 ${f(-r)})">${star((j % 2 ? 6 : 10) * z)}</g>`);
-        case 'dot': return around(n(8, 16), j => `<circle cy="${f(-r)}" r="${f((j % 2 ? 1.1 : 2.2) * z)}" fill="${WHITE}"/>`);
-        case 'orb': return around(n(6, 8), () => `<circle cy="${f(-r)}" r="${f(5 * z)}" fill="url(#${U('g')})"/><circle cy="${f(-r)}" r="${f(1.8 * z)}" fill="${WHITE}"/>`);
-        case 'drop': return around(n(5, 8), j => { const q = (j % 2 ? 4 : 6.5) * z; return `<g transform="translate(0 ${f(-r)})"><circle r="${f(q)}" fill="${BLUE}" fill-opacity=".3" stroke="${WHITE}" stroke-width=".8"/><path d="M${f(-q * 0.5)} ${f(-q * 0.15)}A${f(q * 0.55)} ${f(q * 0.55)} 0 0 1 ${f(-q * 0.1)} ${f(-q * 0.55)}" ${line} stroke-width=".9"/></g>`; });
-        case 'shard':
-        case 'gem': { const wide = l.shape === 'gem' ? 0.42 : 0.24;
-          return around(n(6, 8), j => { const q = (j % 2 ? 9 : 15) * z; return `<path d="M0 ${f(-r - q)}L${f(q * wide)} ${f(-r)}L0 ${f(-r + q * 0.7)}L${f(-q * wide)} ${f(-r)}Z" fill="url(#${U('f')})" stroke="${WHITE}" stroke-width=".8" stroke-linejoin="round"/>`; }); }
-        case 'heart': return around(n(5, 8), () => `<g transform="translate(0 ${f(-r)}) scale(${f(0.13 * z)}) translate(-50 -46)"><path d="${HEART}" fill="url(#${U('o')})" stroke="${WHITE}" stroke-width="5"/></g>`);
-        case 'ray': return around(n(12, 24), j => `<path d="M0 ${f(-r + 7 * z)}L0 ${f(-r - (j % 2 ? 2 : 9) * z)}" ${line} stroke-width="${j % 2 ? 0.6 : 1}"/>`);
-        case 'wave': { const k = n(8, 12); let d = '';
-          for (let i = 0; i <= 180; i++) { const a = i / 180 * 6.2832, q = r + 3.2 * z * Math.sin(k * a); d += (i ? 'L' : 'M') + f(Math.cos(a) * q) + ' ' + f(Math.sin(a) * q); }
-          return `<path d="${d}Z" ${line} stroke-width=".9"/>`; }
-        case 'thread': { const k = n(5, 7); let d = '';
-          for (let i = 0; i <= 360; i++) { const a = i / 360 * 12.5664, q = (r + 8 * z) * (0.62 + 0.38 * Math.cos((k + 0.5) * a)); d += (i ? 'L' : 'M') + f(Math.cos(a) * q) + ' ' + f(Math.sin(a) * q); }
-          return `<path d="${d}Z" ${line} stroke-width=".7" opacity=".85"/>`; }
-        default: return `<circle r="${f(r)}" ${line} stroke-width=".8"/><circle r="${f(r)}" ${line} stroke-width="2.4" stroke-dasharray=".1 ${f(r * 6.2832 / (n(1, 8)) - 0.1)}"/>`;
-      }
-    };
-    const R = [0, 34, 60, 83], Z = [1, 1, 0.72, 0.58];
-    layers.forEach((l, i) => {
-      const g = i ? band(l, R[i], Z[i]) : core(l);
-      out += `<g class="ly" style="--i:${i + 1}"><g class="${i ? 'rot' : ''}" style="--dur:${90 + i * 30}s;--dirn:${i % 2 ? 'normal' : 'reverse'}">${g}</g></g>`;
-    });
-    svg.innerHTML = out;
+    <g class="ly" style="--i:0"><circle r="74" fill="url(#${U('g')})" opacity=".4"/><circle r="74" fill="url(#${U('g')})" filter="url(#${U('n')})"/></g>
+    <g class="ly" style="--i:1"><g class="${labels ? '' : 'rot'}" style="--dur:160s">${flake}${seeds}
+      <path d="${hex(0, 11.5)}" ${ice}/><path d="${hex(0, 5.5)}" fill="${WHITE}"/></g></g>
+    <g class="ly marks" style="--i:2">${marks}</g>`;
   }
 
   /* ───────── ice ───────── */
@@ -460,9 +416,7 @@
   function startPlay(data) {
     clearTimers();
     state.data = data;
-    Object.assign(state, { broken: 0, taps: 0, next: 0, queue: [], lastShow: 0, side: 0, done: false, hex: data.color.hex, sub: data.color.sub });
-    root.style.setProperty('--heart', data.color.hex);
-    root.style.setProperty('--heart2', data.color.sub);
+    Object.assign(state, { broken: 0, taps: 0, next: 0, queue: [], lastShow: 0, side: 0, done: false });
     setMelt(0);
     body.classList.remove('thawing', 'thawed');
     laneL.textContent = ''; laneR.textContent = '';
@@ -602,60 +556,62 @@
     }
     kick();
     [...laneL.children, ...laneR.children].forEach(dismiss);
-    $('#mName').textContent = d.form.name;
-    $('#mDesc').textContent = d.form.desc;
+    $('#mName').textContent = d.crystal.name;
+    $('#mDesc').textContent = d.crystal.desc;
     $('#mFinal').textContent = d.final;
-    emblem($('#emblem'), d, 'e1');
-    later(() => {
-      body.classList.add('thawing');
-      $('#emblem').classList.add('on');
-      Sfx.bloom();
-    }, reduce ? 50 : 650);
-    later(() => {
-      body.classList.add('thawed');
-      $('#toResult').focus({ preventScroll: true });
-      state.heartRect = ice.getBoundingClientRect();
-    }, reduce ? 100 : 1900);
+    snowflake($('#emblem'), d, 'e1', false);
+    later(() => { body.classList.add('thawing'); $('#emblem').classList.add('on'); Sfx.bloom(); }, reduce ? 50 : 650);
+    later(() => { body.classList.add('thawed'); $('#toResult').focus({ preventScroll: true }); state.heartRect = ice.getBoundingClientRect(); }, reduce ? 100 : 1900);
   }
 
+  function fillList(host, items, make) { host.textContent = ''; items.forEach((it, i) => host.appendChild(make(it, i))); }
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
+
   function showResult() {
-    const d = state.data;
+    const d = state.data, c = d.crystal;
     ambient = false;
     $('#rNpc').textContent = d.npc; $('#rPc').textContent = d.pc;
     const now = new Date();
     $('#rDate').textContent = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
-    $('#rTemp').textContent = d.temp.value; $('#rUnit').textContent = d.temp.unit; $('#rTempNote').textContent = d.temp.note;
-    $('#rColorName').textContent = d.color.name; $('#rColorHex').textContent = d.color.hex; $('#rColorMean').textContent = d.color.meaning;
-    $('#rFormName').textContent = d.form.name; $('#rFormDesc').textContent = d.form.desc;
-    $('#rMoment').textContent = d.moment; $('#rEssence').textContent = d.essence; $('#rTruth').textContent = d.truth;
-    for (const id of ['rMoment', 'rEssence', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
-    const log = $('#rLog');
-    log.textContent = '';
-    d.balloons.forEach(b => {
-      const li = document.createElement('li');
-      if (b.tag) { const t = document.createElement('b'); t.textContent = b.tag; li.appendChild(t); }
-      li.appendChild(document.createTextNode(b.text));
-      log.appendChild(li);
-    });
-    $('#rLogN').textContent = `(${d.balloons.length})`;
-    emblem($('#emblemR'), d, 'e2');
-    const code = seeded(d.npc + d.pc + d.form.name);
+    const code = seeded(d.npc + d.pc + c.name);
     $('#rNo').textContent = 'No. IM-' + String(code() * 9000 + 1000 | 0);
-    $('#ringText').textContent = `For ${d.pc} only · Ice Melt Report · ${d.form.name} · ${d.color.name} · `.repeat(2);
+    $('#ringText').textContent = `For ${d.pc} only · Snow crystal certificate · ${c.name} · One of one · `.repeat(2);
+    $('#rName').textContent = c.name; $('#rDesc').textContent = c.desc;
+    $('#rLight').textContent = c.light.name ? `${c.light.name}${c.light.meaning ? ' · ' + c.light.meaning : ''}` : '';
+    $('#rLight').parentElement.hidden = !c.light.name;
+    $('#rCore').textContent = c.core; $('#rFrozen').textContent = c.frozen; $('#rLasting').textContent = c.lasting; $('#rTruth').textContent = c.truth;
+    for (const id of ['rCore', 'rFrozen', 'rLasting', 'rTruth']) $('#' + id).closest('.item').hidden = !$('#' + id).textContent;
+    $('.duo').hidden = !c.frozen && !c.lasting;
+    const named = c.arms.map((a, i) => ({ ...a, i })).filter(a => a.name);
+    fillList($('#rArms'), named, a => {
+      const li = el('li');
+      li.append(el('b', '', String(a.i + 1)));
+      const box = el('div'), head = el('p', 'arm-name', a.name);
+      head.append(el('span', 'arm-style', STYLE_KO[a.style]));
+      box.append(head);
+      if (a.desc) box.append(el('p', '', a.desc));
+      li.append(box);
+      return li;
+    });
+    $('#rArms').closest('.item').hidden = !named.length;
+    fillList($('#rLog'), d.balloons, b => { const li = el('li'); if (b.tag) li.append(el('b', '', b.tag)); li.append(document.createTextNode(b.text)); return li; });
+    $('#rLogN').textContent = `(${d.balloons.length})`;
+    snowflake($('#emblemR'), d, 'e2', true);
     setMelt(1);
     show('result');
   }
 
   function resultText() {
-    const d = state.data;
+    const d = state.data, c = d.crystal;
     return [
-      `ICE MELT — ${d.npc} → ${d.pc}`,
-      `01 사랑의 온도: ${d.temp.value}${d.temp.unit}${d.temp.note ? ' — ' + d.temp.note : ''}`,
-      `02 하트 컬러: ${d.color.name} (${d.color.hex})${d.color.meaning ? ' — ' + d.color.meaning : ''}`,
-      `03 애정의 형상: ${d.form.name}${d.form.desc ? ' — ' + d.form.desc : ''}`,
-      d.moment && `04 결정적인 순간: ${d.moment}`,
-      d.essence && `05 사랑의 본질: ${d.essence}`,
-      d.truth && `06 가장 솔직한 속마음: ${d.truth}`
+      `ICE MELT · 눈 결정 감정서 — ${d.npc} → ${d.pc}`,
+      `결정: ${c.name}${c.desc ? ' — ' + c.desc : ''}`,
+      c.light.name && `빛깔: ${c.light.name}${c.light.meaning ? ' — ' + c.light.meaning : ''}`,
+      c.core && `핵: ${c.core}`,
+      ...c.arms.filter(a => a.name).map((a, i) => `가지 ${i + 1}: ${a.name}${a.desc ? ' — ' + a.desc : ''}`),
+      c.frozen && `얼린 이유: ${c.frozen}`,
+      c.lasting && `녹지 않는 이유: ${c.lasting}`,
+      c.truth && `속마음: ${c.truth}`
     ].filter(Boolean).join('\n');
   }
 
@@ -682,7 +638,7 @@
   /* ───────── OOC steps ───────── */
   const STEPS = [
     { title: '해동 기록', desc: '얼음이 깨질 때마다 새어 나올 속마음과 마지막 본심을 받습니다.', ph: '대상: … / …\n해동 1 [감정: …] (속마음: …)\n본심: …' },
-    { title: '사랑의 온도', desc: '같은 채팅에 이어서 보냅니다. 온도, 하트 컬러, 애정의 형상, 결과지 내용을 받습니다.', ph: '온도: 00.0 °C · …\n색: #RRGGBB · … · …\n형상: … · …' }
+    { title: '눈 결정 감정', desc: '같은 채팅에 이어서 보냅니다. 얼음이 다 깨진 뒤 남는 눈 결정 한 송이의 이름, 핵, 여섯 가지를 받습니다.', ph: '결정: … · …\n핵: …\n가지 1 [이름: …] [길이: 0] [결: …] (설명: …)' }
   ];
   const MARK = ['①', '②'];
   const stepsEl = $('#steps'), startBtn = $('#startBtn'), lastBtn = $('#lastBtn');
@@ -728,7 +684,7 @@
   function accept(i, text, quiet) {
     try {
       answers[i] = PARSERS[i](text);
-      store.set('icemelt:a' + i, text);
+      store.set('icemelt2:a' + i, text);
       fail(i, '');
       paintSteps();
       if (!quiet) { toast(`${STEPS[i].title} 확인 완료`); (answers[0] && answers[1] ? startBtn : $('[data-act="copy"]', stepEl(i + 1))).focus(); }
@@ -757,7 +713,7 @@
       pre.textContent = window.ICE.PROMPTS[i]; pre.hidden = !open;
       btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'OOC 내용 접기' : 'OOC 내용 보기';
     } else if (act === 'redo' || act === 'clear') {
-      for (let j = i; j < (act === 'clear' ? answers.length : i + 1); j++) { answers[j] = null; store.set('icemelt:a' + j, ''); $('textarea', stepEl(j)).value = ''; fail(j, ''); }
+      for (let j = i; j < (act === 'clear' ? answers.length : i + 1); j++) { answers[j] = null; store.set('icemelt2:a' + j, ''); $('textarea', stepEl(j)).value = ''; fail(j, ''); }
       paintSteps();
       if (act === 'redo') openManual(i);
     }
@@ -771,12 +727,12 @@
   });
 
   const build = () => normalize({ ...answers[0], ...answers[1] });
-  function begin(d) { store.set('icemelt:last', JSON.stringify(d)); lastBtn.hidden = false; Sfx.init(); startPlay(d); }
+  function begin(d) { store.set('icemelt2:last', JSON.stringify(d)); lastBtn.hidden = false; Sfx.init(); startPlay(d); }
 
-  [0, 1].forEach(i => { const t = store.get('icemelt:a' + i); if (t && (i === 0 || answers[0])) accept(i, t, true); });
+  [0, 1].forEach(i => { const t = store.get('icemelt2:a' + i); if (t && (i === 0 || answers[0])) accept(i, t, true); });
   paintSteps();
   let lastData = null;
-  try { lastData = normalize(JSON.parse(store.get('icemelt:last'))); } catch { /* nothing saved */ }
+  try { lastData = normalize(JSON.parse(store.get('icemelt2:last'))); } catch { /* nothing saved */ }
   lastBtn.hidden = !lastData;
 
   /* ───────── wiring ───────── */
@@ -784,7 +740,7 @@
   $('#sampleBtn').addEventListener('click', () => { Sfx.init(); startPlay(normalize({ ...parse1(window.ICE.SAMPLE[0]), ...parse2(window.ICE.SAMPLE[1]) })); });
   lastBtn.addEventListener('click', () => {
     let d = null;
-    try { d = normalize(JSON.parse(store.get('icemelt:last'))); } catch { /* fall through */ }
+    try { d = normalize(JSON.parse(store.get('icemelt2:last'))); } catch { /* fall through */ }
     if (d) { Sfx.init(); startPlay(d); } else toast('저장된 해동 기록이 없어요.');
   });
   $('#toResult').addEventListener('click', () => { Sfx.ui(); showResult(); });

@@ -97,73 +97,65 @@
       <div class="lane lane-r" id="laneR"></div>
 
       <div class="manifest" id="manifest">
-        <p class="label">Heart manifestation</p>
+        <p class="label">Snow crystal · one of one</p>
         <h2 id="mName"></h2>
         <p class="m-desc" id="mDesc"></p>
         <blockquote id="mFinal"></blockquote>
-        <button class="btn primary" id="toResult" type="button">사랑의 온도 확인하기</button>
+        <button class="btn primary" id="toResult" type="button">감정서 받기</button>
       </div>
     </div>
     <div class="sr" aria-live="polite" id="live"></div>
   </section>
 
-  <section class="screen result" id="result" hidden aria-label="결과지">
+  <section class="screen result" id="result" hidden aria-label="눈 결정 감정서">
     <article class="sheet" id="sheet">
       <header class="sh-top">
         <div>
-          <p class="label">Ice melt report · <span id="rNo"></span></p>
-          <h2><i>Temperature</i> of Love</h2>
-          <p class="sh-ko">사랑의 온도</p>
+          <p class="label">Ice melt · <span id="rNo"></span></p>
+          <h2><i>Snow Crystal</i> Certificate</h2>
+          <p class="sh-ko">눈 결정 감정서</p>
         </div>
         <div class="sh-meta">
           <p class="pair"><span id="rNpc"></span><i aria-hidden="true"></i><span id="rPc"></span></p>
           <p class="label" id="rDate"></p>
-          <div class="phases" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
       </header>
 
       <div class="sh-grid">
         <div class="sh-visual">
           <div class="window">
-            <svg class="ring" viewBox="-100 -100 200 200" aria-hidden="true"><defs><path id="ringPath" d="M0 -91a91 91 0 1 1-.01 0"/></defs><text><textPath href="#ringPath" id="ringText" textLength="566" lengthAdjust="spacing"></textPath></text></svg>
-            <svg class="emblem on" id="emblemR" viewBox="-100 -100 200 200" role="img" aria-label="애정의 형상"></svg>
+            <svg class="ring" viewBox="-100 -100 200 200" aria-hidden="true"><defs><path id="ringPath" d="M0 -94a94 94 0 1 1-.01 0"/></defs><text><textPath href="#ringPath" id="ringText" textLength="584" lengthAdjust="spacing"></textPath></text></svg>
+            <svg class="emblem on" id="emblemR" viewBox="-100 -100 200 200" role="img" aria-label="눈 결정"></svg>
           </div>
           <section class="item">
-            <h3><b>03</b>애정의 형상</h3>
-            <p class="form-name" id="rFormName"></p>
-            <p id="rFormDesc"></p>
+            <h3><b>01</b>결정의 이름</h3>
+            <p class="form-name" id="rName"></p>
+            <p id="rDesc"></p>
+            <p class="light"><span>빛깔</span><span id="rLight"></span></p>
           </section>
         </div>
 
         <div class="sh-main">
+          <section class="item">
+            <h3><b>02</b>핵 · 처음 마음이 맺힌 순간</h3>
+            <p id="rCore"></p>
+          </section>
+          <section class="item">
+            <h3><b>03</b>여섯 가지 · 마음을 주어 온 방식</h3>
+            <ol class="arms" id="rArms"></ol>
+          </section>
           <div class="duo">
-            <section class="item temp">
-              <h3><b>01</b>사랑의 온도</h3>
-              <p class="temp-v"><span id="rTemp"></span><small id="rUnit"></small></p>
-              <p id="rTempNote"></p>
+            <section class="item">
+              <h3><b>04</b>얼려 둔 이유</h3>
+              <p id="rFrozen"></p>
             </section>
-            <section class="item color">
-              <h3><b>02</b>하트 컬러</h3>
-              <div class="chip">
-                <span class="orbs" aria-hidden="true"><i></i><i></i></span>
-                <div>
-                  <p class="color-name" id="rColorName"></p>
-                  <p class="label" id="rColorHex"></p>
-                </div>
-              </div>
-              <p id="rColorMean"></p>
+            <section class="item">
+              <h3><b>05</b>녹지 않는 이유</h3>
+              <p id="rLasting"></p>
             </section>
           </div>
-          <section class="item">
-            <h3><b>04</b>마음이 열린 결정적인 순간</h3>
-            <p id="rMoment"></p>
-          </section>
-          <section class="item">
-            <h3><b>05</b>이 사랑의 본질</h3>
-            <p id="rEssence"></p>
-          </section>
           <section class="item truth">
-            <h3><b>06</b>얼음 아래 가장 솔직한 속마음</h3>
+            <h3><b>06</b>결정 안쪽에 적혀 있던 말</h3>
             <p id="rTruth"></p>
           </section>
         </div>
