@@ -213,15 +213,15 @@ void main(){
   float asp=r.x/r.y;
   vec2 p=vec2(uv.x*asp,uv.y);
   vec3 col=mix(vec3(.80,.86,1.),vec3(.95,.97,1.),uv.y);
-  float s=t*.11;
+  float s=t*.42;
   float R=.42*max(1.,1./asp)+.18;
-  col=blob(col,p,vec2(.18*asp+.10*sin(s*.9),.78+.08*cos(s*1.1)),R*(.62+.32*sin(s*1.7)),vec3(.36,.52,.95),.82);
-  col=blob(col,p,vec2(.82*asp+.12*cos(s*.7+1.),.22+.10*sin(s*.8)),R*(.70+.34*sin(s*1.3+2.)),vec3(.40,.56,.97),.78);
-  col=blob(col,p,vec2(.55*asp+.18*sin(s*.6+3.),.55+.12*cos(s*.9+1.)),R*(.48+.30*sin(s*1.1+4.)),vec3(.58,.72,1.),.70);
-  col=blob(col,p,vec2(.30*asp+.14*cos(s*.8+2.),.24+.10*sin(s*1.2+3.)),R*(.50+.28*sin(s*1.5+1.)),vec3(.62,.86,1.),.55);
-  col=blob(col,p,vec2(.72*asp+.10*sin(s*1.1+5.),.80+.06*cos(s*.7+2.)),R*(.46+.26*sin(s*1.9+3.)),vec3(1.),.85);
-  col=blob(col,p,vec2(.42*asp+.16*cos(s*.5+4.),.92+.05*sin(s*.9)),R*(.40+.22*sin(s*1.4+5.)),vec3(1.),.75);
-  col=blob(col,p,vec2(.95*asp+.08*sin(s*.9+1.),.58+.10*cos(s*1.3+4.)),R*(.38+.24*sin(s*1.6+2.)),vec3(.30,.47,.93),.6);
+  col=blob(col,p,vec2(.18*asp+.10*sin(s*.9),.78+.08*cos(s*1.1)),R*(.62+.46*sin(s*1.7)),vec3(.36,.52,.95),.82);
+  col=blob(col,p,vec2(.82*asp+.12*cos(s*.7+1.),.22+.10*sin(s*.8)),R*(.70+.48*sin(s*1.3+2.)),vec3(.40,.56,.97),.78);
+  col=blob(col,p,vec2(.55*asp+.18*sin(s*.6+3.),.55+.12*cos(s*.9+1.)),R*(.48+.44*sin(s*1.1+4.)),vec3(.58,.72,1.),.70);
+  col=blob(col,p,vec2(.30*asp+.14*cos(s*.8+2.),.24+.10*sin(s*1.2+3.)),R*(.50+.42*sin(s*1.5+1.)),vec3(.62,.86,1.),.55);
+  col=blob(col,p,vec2(.72*asp+.10*sin(s*1.1+5.),.80+.06*cos(s*.7+2.)),R*(.46+.40*sin(s*1.9+3.)),vec3(1.),.85);
+  col=blob(col,p,vec2(.42*asp+.16*cos(s*.5+4.),.92+.05*sin(s*.9)),R*(.40+.36*sin(s*1.4+5.)),vec3(1.),.75);
+  col=blob(col,p,vec2(.95*asp+.08*sin(s*.9+1.),.58+.10*cos(s*1.3+4.)),R*(.38+.38*sin(s*1.6+2.)),vec3(.30,.47,.93),.6);
   gl_FragColor=vec4(col,1.);
 }`;
     const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
@@ -237,36 +237,10 @@ void main(){
     const SCALE = 0.4;
     const size = () => { const w = Math.max(1, Math.round(innerWidth * SCALE)), h = Math.max(1, Math.round(innerHeight * SCALE)); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); } };
     size(); addEventListener('resize', size);
-    document.documentElement.classList.add('gl-bg');
     const t0 = performance.now() - 40000 * Math.random();
-    const frame = now => { if (!document.hidden) { gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); } requestAnimationFrame(frame); };
+    const frame = now => { if (!document.hidden) { gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3); if (!ok && !gl.getError()) { ok = true; document.documentElement.classList.add('gl-bg'); } } requestAnimationFrame(frame); };
+    let ok = false;
     requestAnimationFrame(frame);
-  })();
-
-  /* ───────── ambient decor ───────── */
-  (function decor() {
-    const host = $('#decor'), r = seeded('frost');
-    const STAR = 'M12 0c.9 6.300 5.700 11.100 12 12-6.300.900-11.100 5.700-12 12-.900-6.300-5.700-11.100-12-12 6.300-.900 11.100-5.700 12-12Z';
-    const DOODLES = [
-      'M12 21C5 15.500 2 12 2 8a5 5 0 0 1 10-1.500A5 5 0 0 1 22 8c0 4-3 7.500-10 13Z',
-      'M12 2c4 6 7 9 7 13a7 7 0 0 1-14 0c0-4 3-7 7-13Z',
-      'M12 2v20M3.300 7l17.400 10M3.300 17L20.700 7M9 3.500l3 2.500 3-2.500M9 20.500l3-2.500 3 2.500',
-      'M12 12c0-2 3-2 3 .500s-4 3.500-6 1-1-7 3.500-7 7 4 5.500 8.500',
-      'M4 16c3-6 5 4 8-2s5 4 8-2',
-      'M12 3l2.200 6.200L20.500 9l-5 4 1.800 6.300L12 15.500 6.700 19.300 8.500 13l-5-4 6.300.200Z'
-    ];
-    let html = '';
-    for (let i = 0; i < 16; i++) {
-      const sz = 8 + r() * 20;
-      html += `<svg class="st${i % 3 === 0 ? ' y' : ''}" viewBox="0 0 24 24" style="left:${r() * 100}%;top:${r() * 100}%;width:${sz}px;--d:${3 + r() * 5}s;--dl:${-r() * 6}s"><path d="${STAR}"/></svg>`;
-    }
-    for (let i = 0; i < 9; i++) {
-      const sz = 26 + r() * 30, edge = r() < 0.5;
-      const x = edge ? (r() < 0.5 ? r() * 16 : 84 + r() * 14) : r() * 100, y = edge ? r() * 100 : (r() < 0.5 ? r() * 12 : 88 + r() * 10);
-      html += `<svg class="dd" viewBox="0 0 24 24" style="left:${x}%;top:${y}%;width:${sz}px;transform:rotate(${(r() * 50 - 25) | 0}deg)"><path d="${DOODLES[i % DOODLES.length]}"/></svg>`;
-    }
-    html += '<i class="orbit" style="width:46vmax;height:46vmax;left:-14vmax;bottom:-18vmax"></i><i class="orbit" style="width:30vmax;height:30vmax;right:-8vmax;top:-10vmax"></i>';
-    host.innerHTML = html;
   })();
 
   /* ───────── data ───────── */
