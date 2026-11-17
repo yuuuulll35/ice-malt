@@ -725,6 +725,6 @@ body.paused *, body.paused *::before, body.paused *::after { animation-play-stat
 .leave-acts .btn:not(.primary) { background: #fff; color: var(--ink); }
 .leave-acts .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
 .leave-acts .btn:active { transform: scale(.97); }
-.sh-log .tl-when { flex: none; font: 500 11.5px/1.5 var(--f-body); letter-spacing: .02em; color: #fff; background: rgba(37, 69, 207, .78); padding: 2px 9px; border-radius: 999px; }
-.sh-log li:first-child .tl-when, .sh-log li:last-child .tl-when { background: var(--ink); }
+.sh-log .tl-when { flex: none; font: 500 11.5px/1.5 var(--f-body); letter-spacing: .02em; color: var(--ink); background: #fff; border: 1px solid var(--ink); padding: 1px 9px; border-radius: 999px; }
+.sh-log li:first-child .tl-when, .sh-log li:last-child .tl-when { background: var(--ink); color: #fff; }
 .sh-log .tl-head { align-items: center; flex-wrap: wrap; }
