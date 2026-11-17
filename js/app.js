@@ -310,6 +310,7 @@ void main(){
   const str = (v, max = 600) => (typeof v === 'string' || typeof v === 'number') ? String(v).trim().slice(0, max) : '';
   const STYLES = [[/깃|고사리|솜/, 'feather'], [/곧|바늘|직선|선/, 'needle'], [/판|육각|면|유리/, 'plate'], [/가시|창|칼|날/, 'spike'], [/이슬|구슬|방울|물/, 'dew']];
   const STYLE_KO = { feather: '깃털', needle: '곧음', plate: '판', spike: '가시', dew: '이슬' };
+  const WAY_KO = { feather: '섬세하게', needle: '한결같이', plate: '든든하게', spike: '서툴게', dew: '여리게' };
   const TYPES = { feather: ['깃털형 결정', 'Fernlike Dendrite'], needle: ['바늘형 결정', 'Needle Star'], plate: ['육각판형 결정', 'Sectored Plate'], spike: ['가시형 결정', 'Spiked Stellar'], dew: ['이슬형 결정', 'Rimed Stellar'] };
   const clean = t => String(t || '').replace(/```[a-z]*/gi, '').replace(/\r/g, '');
   const isPrompt = t => /\[OOC\s*\d\/\d|잠시 역할극 중단|\[출력\]/.test(t);
@@ -762,11 +763,11 @@ void main(){
     fillList($('#rArms'), named, a => {
       const li = el('li');
       const top = el('div', 'arm-top');
-      top.append(el('b', 'arm-no', String(a.i + 1).padStart(2, '0')), el('span', 'arm-part', PARTS[a.i]));
+      top.append(el('b', 'arm-no', String(a.i + 1).padStart(2, '0')), el('span', 'arm-part', WAY_KO[a.style]));
       li.append(top, el('p', 'arm-name', a.name));
       if (a.desc) li.append(el('p', 'arm-desc', a.desc));
       const foot = el('div', 'arm-foot');
-      foot.append(el('span', 'arm-style', `${STYLE_KO[a.style]}의 결`));
+      foot.append(el('span', 'arm-style', '마음을 써 온 시간'));
       const meter = el('span', 'arm-len');
       meter.setAttribute('aria-label', `머문 시간 ${a.len} / 10`);
       for (let k = 1; k <= 10; k++) meter.append(el('i', k <= a.len ? 'on' : ''));
@@ -810,9 +811,9 @@ void main(){
     return [
       `ICE MELT · 눈 결정 감정서 — ${d.npc} → ${d.pc}`,
       `결정: ${c.name}${c.desc ? ' — ' + c.desc : ''}`,
-      c.light.name && `빛깔: ${c.light.name}${c.light.meaning ? ' — ' + c.light.meaning : ''}`,
+      c.light.name && `이 마음의 색: ${c.light.name}${c.light.meaning ? ' — ' + c.light.meaning : ''}`,
       `유형: ${TYPES[c.arms[0].style][0]}`,
-      `처음 얼음: ${ICE_LV[d.ice.level - 1].name}${d.ice.why ? ' — ' + d.ice.why : ''}`,
+      `처음 만났을 때의 경계심: ${ICE_LV[d.ice.level - 1].name}${d.ice.why ? ' — ' + d.ice.why : ''}`,
       c.core && `처음, 마음이 맺힌 자리: ${c.core}`,
       ...c.arms.filter(a => a.name).map((a, i) => `마음 ${i + 1}: ${a.name}${a.desc ? ' — ' + a.desc : ''}`),
       c.frozen && `차마 녹이지 못했던 이유: ${c.frozen}`,
