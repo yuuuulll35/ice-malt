@@ -1,21 +1,26 @@
 # ICE MELT
 
-NPC가 PC에게 마음을 열어 온 과정을 얼음 깨기로 풀어내는 감정 진단 시뮬레이션.
+얼음을 두드려 NPC가 PC에게 숨겨 둔 속마음을 깨우고, 마지막에 남는 눈 결정으로 마음을 감정하는 OOC 결과 뷰어 — 빌드 없는 HTML/CSS/JavaScript.
+
+**https://yuuuulll35.github.io/ice-malt/**
 
 ## 사용법
 
-OOC는 답이 길어져 끊기지 않도록 두 번에 나눠 보낸다. ②는 같은 채팅에 이어서 보낸다.
+OOC는 답이 끊기지 않도록 두 번에 나눠 보낸다. ②는 같은 채팅에 이어서 보낸다.
 
-1. **OOC ①**(해동 기록): 대상, 얼음 두께(1~5), 얼음이 깨질 때 나올 속마음, 본심
-2. **OOC ②**(눈 결정 감정): 결정의 이름, 핵, 가지 여섯 개, 빛깔, 얼린 이유, 녹지 않는 이유, 속마음
+| 단계 | 받는 내용 |
+|---|---|
+| OOC ① 해동 기록 | 대상, 처음 얼음의 두께(1~5), 시점별 속마음, 마지막 본심 |
+| OOC ② 눈 결정 감정 | 결정 이름, 처음 마음이 맺힌 순간, 여섯 가지 마음, 마음의 색, 숨긴 이유와 남는 이유, 속마음 |
 
-단계마다 **OOC 복사** → 채팅에 보내기 → 받은 답을 통째로 복사해 **답 붙여넣기**. 둘 다 넣으면 **해동 시작**.
+1. **OOC 복사** → 롤플 중인 채팅에 보내기 → 받은 답을 **답 붙여넣기**(또는 **직접 붙여넣기** 후 **입력 완료**).
+2. 두 단계가 완료되면 **해동 시작**. 얼음을 연타해 깨면 속마음이 하나씩 나온다.
+3. 마지막 얼음이 깨지면 눈 결정이 나타나고, **감정서 받기**로 결과지를 연다.
+4. 결과지에서 **이미지로 저장**하면 공유용 카드 한 장이 저장된다.
 
-얼음을 모두 깨면 눈 결정 한 송이가 남고, 감정서가 나온다. 결정의 여섯 가지는 NPC가 마음을 주어 온 방식 여섯 가지이며, 가지마다 길이와 결에 따라 다르게 그려진다.
+얼음 두께에 따라 얼음 조각 수와 단단함이 달라진다(살얼음 ~ 만년설). 눈 결정 모양은 여섯 가지 마음의 길이와 결로 정해지며, 1번 마음의 결이 결정 유형(깃털형·바늘형·육각판형·가시형·이슬형)이 된다.
 
-답이 확인되면 단계가 **✓ 완료**로 바뀌고 요약과 **다시 넣기 / 지우기**가 나온다. 빠진 항목이 있으면 알려 주고, OOC를 그대로 붙여 넣으면 답을 복사하라고 안내한다. 브라우저가 클립보드 읽기를 막으면 **직접 붙여넣기** 칸이 열린다.
-
-**예시로 보기**는 예시 답으로 바로 시작한다. 마지막으로 본 결과는 브라우저(localStorage)에만 저장되어 **지난 해동 다시 보기**로 돌아온다.
+**예시로 보기**는 예시 답으로 바로 시작한다. 마지막으로 본 결과는 이 브라우저(localStorage)에만 남아 **지난 해동 다시 보기**로 돌아온다.
 
 ## OOC 답 형식
 
@@ -38,28 +43,23 @@ OOC는 답이 길어져 끊기지 않도록 두 번에 나눠 보낸다. ②는 
 
 결은 깃털, 곧음, 판, 가시, 이슬 중 하나.
 
-얼음 두께는 사랑의 크기가 아니라 처음의 경계심이다. 1 살얼음부터 5 만년설까지 얼음 조각 수와 단단함이 달라지고, 속마음 개수도 4~5개(살얼음)에서 12~14개(만년설)로 늘어난다. 얼음 줄이 없는 예전 답은 4(두꺼운 얼음)로 본다.
-
-## 구조
-
-- `index.html` — 화면 구성
-- `css/style.css` — 스타일
-- `js/data.js` — OOC 두 개, 예시 답
-- `js/app.js` — 답 판독, 얼음 깨기, 사운드 합성, 형상 생성, 결과지
-
-빌드 과정 없는 정적 사이트. 효과음은 Web Audio로 합성하며 음원 파일을 쓰지 않는다.
-
 ## 폰트
 
-Google Fonts에서 불러오며 모두 SIL Open Font License 1.1을 따른다.
+모든 폰트는 SIL Open Font License 1.1을 따르며, 저장소에 포함되지 않고 Google Fonts에서 불러옵니다.
 
-- Bagel Fat One — © The Bagel Fat Project Authors
-- Bodoni Moda — © The Bodoni Moda Project Authors
-- Noto Serif KR — © Google, Adobe
-- Cormorant Garamond — © The Cormorant Project Authors
-- IBM Plex Sans KR — © IBM Corp.
-- Martian Mono — © The Martian Mono Project Authors
+| 폰트 | 쓰임 | 저작권 | 제공 |
+|---|---|---|---|
+| Bagel Fat One | 로고, READY~ START! | © The Bagel Fat Project Authors | Google Fonts |
+| Noto Serif KR | 제목, 본문 | © Google, Adobe | Google Fonts |
+| IBM Plex Sans KR | 버튼, 안내 문구 | © IBM Corp. | Google Fonts |
+| Martian Mono | 작은 영문 라벨 | © The Martian Mono Project Authors | Google Fonts |
+| Cormorant Garamond | 영문 이탤릭, 번호, 따옴표 | © The Cormorant Project Authors | Google Fonts |
+| Bodoni Moda | 영문 이탤릭 보조 | © The Bodoni Moda Project Authors | Google Fonts |
 
 ## 사용한 라이브러리
 
-- [html-to-image](https://github.com/bubkoo/html-to-image) 1.11.11 — MIT License, © 2017-2023 W.Y. 감정서를 이미지로 저장할 때 쓴다(`js/vendor/`).
+| 라이브러리 | 쓰임 | 라이선스 | 제공 |
+|---|---|---|---|
+| [html-to-image](https://github.com/bubkoo/html-to-image) 1.11.11 | 결과 카드를 이미지로 저장 | MIT, © 2017-2023 W.Y. | 저장소 포함(`js/vendor/`) |
+
+효과음과 배경음악은 Web Audio로 합성하며 음원 파일을 쓰지 않습니다.

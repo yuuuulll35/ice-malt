@@ -1,4 +1,3 @@
-/* Frost print: one cobalt ink on grainy sky paper, flat line-art, warmth only where the heart is. */
 :root {
   --paper: #dce8ff;
   --mist: #f5f8ff;
@@ -39,7 +38,6 @@ button:disabled { cursor: not-allowed; }
 
 .label { font: 400 10px/1.6 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
 
-/* ───────── paper ───────── */
 .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: linear-gradient(180deg, #fbfcff, #eef3ff); }
 .bg::before, .bg::after { content: ""; position: absolute; inset: -35%; will-change: transform; }
 .bg::before { background:
@@ -73,7 +71,6 @@ html.gl-bg .bg-warm { position: absolute; inset: 0; opacity: var(--melt); transi
 .flash.go { animation: flash 1.1s ease-out; }
 @keyframes flash { 0% { opacity: 0; } 12% { opacity: .9; } 100% { opacity: 0; } }
 
-/* ───────── bar ───────── */
 .bar { position: absolute; inset: env(safe-area-inset-top, 0px) 0 auto 0; height: var(--bar-h); z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gut-r) 0 var(--gut-l); }
 .brand { display: flex; align-items: center; gap: 8px; padding: 8px 4px; font: 600 11px/1 var(--f-mono); letter-spacing: .16em; color: var(--ink); }
 .brand svg { width: 15px; height: 15px; fill: var(--ink); }
@@ -84,7 +81,6 @@ html.gl-bg .bg-warm { position: absolute; inset: 0; opacity: var(--melt); transi
 .icon-btn svg { width: 21px; height: 21px; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .icon-btn[aria-pressed="true"] .snd-off, .icon-btn[aria-pressed="false"] .snd-on { display: none; }
 
-/* ───────── shared ───────── */
 main { min-height: 100dvh; padding-top: var(--bar-h); display: grid; }
 .screen { padding: 12px var(--gut-r) 36px var(--gut-l); animation: screen-in .6s cubic-bezier(.2, .7, .2, 1) both; }
 @keyframes screen-in { from { opacity: 0; transform: translateY(12px); } }
@@ -107,7 +103,6 @@ main { min-height: 100dvh; padding-top: var(--bar-h); display: grid; }
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; pointer-events: none; z-index: 50; background: #14246e; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13.5px; transition: .25s; max-width: calc(100vw - 36px); }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
 
-/* ───────── ice chamber ───────── */
 .ice { position: relative; border-radius: 26px; isolation: isolate; border: 1.5px solid var(--ink); outline: 1.5px dashed var(--line); outline-offset: 7px; overflow: hidden;
   background:
     radial-gradient(46% 52% at 50% 50%, color-mix(in oklab, var(--tint) calc(var(--melt) * 55%), #cfe0ff) 0, transparent 100%),
@@ -185,7 +180,6 @@ body.freezing .blk { cursor: default; }
 .emblem .rot { animation: spin var(--dur, 60s) linear infinite var(--dirn, normal); }
 @keyframes ly-in { from { opacity: 0; transform: scale(.35) rotate(-40deg); } to { opacity: 1; transform: none; } }
 
-/* ───────── intro ───────── */
 .intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr); gap: clamp(28px, 5vw, 84px); align-items: center; max-width: 1220px; width: 100%; margin: 0 auto; }
 .title { font: 400 clamp(72px, 12.5vw, 176px)/.84 var(--f-display); letter-spacing: -.01em; display: flex; flex-direction: column; margin: 0 0 22px; }
 .title span { -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; width: fit-content; position: relative; -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -216,7 +210,6 @@ textarea::placeholder { color: #9aa8dc; }
 .step-body > .error { color: #b3204f; font-size: 13px; margin: 8px 0 0; }
 .intro-panel .go { padding: clamp(18px, 2.2vw, 26px); }
 
-/* ───────── play ───────── */
 .play { display: grid; grid-template-rows: auto 1fr; justify-items: center; gap: 10px; padding-bottom: 20px; }
 .stagewrap { --ice-w: min(54vw, max(420px, calc((100dvh - 240px) * 1.5))); display: grid; grid-template-columns: auto minmax(250px, 380px); justify-content: center; align-items: center; gap: clamp(22px, 3vw, 44px); width: 100%; max-width: 1500px; }
 .ice-col { display: grid; justify-items: center; gap: 24px; padding: 12px; }
@@ -267,7 +260,6 @@ body.thawed .lane, body.thawed .hud { display: none; }
 body.thawed .manifest { display: block; }
 body.thawed .play .ice { width: min(42vw, max(340px, calc((100dvh - 210px) * 1.15))); aspect-ratio: 1.15; }
 
-/* ───────── aurora (inside the ice and the certificate window) ───────── */
 .ice::before, .window::before { content: ""; position: absolute; inset: 0; z-index: 0;
   background: radial-gradient(60% 50% at 50% 100%, rgba(70, 120, 255, .35) 0, transparent 70%), linear-gradient(175deg, #0c1446, #142070 55%, #0a1038); }
 .ice::before { opacity: 0; transition: opacity 1.2s ease; }
@@ -290,7 +282,6 @@ body.thawing .ice .aurora { opacity: 1; }
   background: linear-gradient(90deg, transparent 8%, rgba(200, 240, 255, .5) 34%, rgba(100, 200, 255, .45) 60%, transparent 90%); }
 @keyframes aurora { 0% { transform: translateX(-8%) rotate(-14deg) skewX(-24deg) scaleY(.82); } 50% { transform: translateX(4%) rotate(-8deg) skewX(-8deg) scaleY(1.18); } 100% { transform: translateX(10%) rotate(-17deg) skewX(-32deg) scaleY(.9); } }
 
-/* ───────── report: a quiet certificate ───────── */
 .result { display: grid; justify-items: center; gap: 30px; align-content: start; padding-bottom: 56px; }
 .sheet { position: relative; width: 100%; max-width: 1040px; color: #1b2660; padding: clamp(26px, 4.4vw, 64px) clamp(20px, 5vw, 72px) clamp(18px, 3vw, 36px);
   background: rgba(251, 252, 255, .86); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
@@ -342,7 +333,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .sh-log li b { font: 400 10px var(--f-mono); letter-spacing: .08em; color: var(--ink); margin-right: 8px; }
 .result-actions { justify-content: center; }
 
-/* ───────── narrow / portrait ───────── */
 @media (max-width: 860px), (orientation: portrait) {
   .intro { grid-template-columns: 1fr; gap: 24px; align-items: start; }
   .title { font-size: clamp(64px, 23vw, 150px); margin: 10px 0 20px; }
@@ -399,7 +389,6 @@ body.thawing .ice .aurora { opacity: 1; }
 @keyframes fly { 0% { opacity: 0; transform: translateY(-14px) scale(.2) rotate(0); } 18% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(calc(var(--far) * -1)) scale(1) rotate(90deg); } }
 @keyframes drift { 0% { opacity: 0; transform: translateY(-16px); } 25% { opacity: .9; } 100% { opacity: 0; transform: translateY(calc(var(--far) * -1)); } }
 
-/* ───────── report readability pass ───────── */
 .sheet { display: grid; gap: 14px; background: rgba(250, 252, 255, .9); }
 .sh-head { padding-bottom: 18px; }
 .sh-type { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
@@ -434,7 +423,6 @@ body.thawing .ice .aurora { opacity: 1; }
   .item h3 { gap: 12px; }
 }
 
-/* ───────── hero title + light, six-ways carousel ───────── */
 .hero-text { gap: 14px; }
 .hero-text h2 { font-weight: 600; letter-spacing: .04em; }
 .light { display: grid; justify-items: center; gap: 6px; max-width: 30em; margin-top: 10px; padding: 16px 0 0; border-top: 1px solid rgba(37, 69, 207, .14); text-align: center; line-height: 1.85; }
@@ -467,7 +455,6 @@ body.thawing .ice .aurora { opacity: 1; }
 @media (max-width: 560px) { .arms li { flex-basis: 78%; } }
 .light + .light { margin-top: 0; }
 
-/* ───────── lower certificate: before / after, then the letter ───────── */
 .duo { position: relative; grid-template-columns: 1fr 1fr; gap: 14px; }
 .duo .item.frozen { border: 0; color: #e9efff; background: radial-gradient(90% 80% at 0% 0%, #2a3c9e 0, transparent 70%), linear-gradient(160deg, #18257a, #0c1448); box-shadow: 0 24px 44px -30px rgba(12, 20, 72, .8); }
 .duo .item.frozen h3 b { color: #9fb6ff; }
@@ -494,7 +481,6 @@ body.thawing .ice .aurora { opacity: 1; }
   .duo .item + .item, .duo .item.thawed { border: 1px solid rgba(37, 69, 207, .16); }
 }
 
-/* ───────── intro panel: same quiet language as the certificate ───────── */
 .intro-panel { border: 1px solid rgba(37, 69, 207, .14); border-radius: 20px; background: rgba(251, 252, 255, .82); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
   box-shadow: 0 40px 80px -56px rgba(20, 36, 110, .55); padding: 10px; display: grid; gap: 10px; }
 .steps { display: grid; gap: 10px; }
@@ -525,7 +511,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .btn:disabled, .btn:disabled:hover, .btn:disabled:active, .intro-panel .btn:disabled, .intro-panel .btn.primary:disabled:hover { background: transparent !important; color: rgba(37, 69, 207, .45) !important; border: 1px dashed rgba(37, 69, 207, .3) !important; box-shadow: none !important; transform: none !important; cursor: not-allowed; }
 @media (max-width: 560px) { .step { grid-template-columns: auto minmax(0, 1fr); gap: 12px; } .acts { flex-wrap: nowrap; gap: 8px; } .acts .btn { flex: 1 1 0; padding: 0 12px; } .intro-panel .go .btn { flex: 1 1 0; } }
 
-/* ───────── one type system everywhere: bold mincho titles, mincho body, thin rules, 16px cards ───────── */
 .manifest h2, .hero-text h2, .step h2, .item h3 span, .c-msg { font-family: var(--f-mincho); font-weight: 600; color: #14206a; letter-spacing: .03em; }
 .manifest h2 { font-size: clamp(28px, 3.2vw, 40px); }
 .c-msg { color: var(--ink); }
@@ -538,7 +523,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .intro-panel, .sheet { border-radius: 20px; }
 .sheet::before { border-radius: 14px; }
 
-/* ───────── fixes: signatures, facts, before/after, the letter ───────── */
 .sig { margin-top: 18px; text-align: right; font: 500 14px/1.4 var(--f-mincho); letter-spacing: .08em; color: var(--ink); }
 .sig::before { content: "— "; }
 .manifest blockquote > p:first-child { margin: 0; }
@@ -570,7 +554,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .manifest blockquote { margin-bottom: 30px; padding-bottom: 40px; }
 .manifest blockquote::after { bottom: 12px; }
 
-/* ───────── performance: no live backdrop blur over the moving background, composited layers only ───────── */
 .intro-panel, .sheet, .manifest blockquote, .truth-card, .result-actions .btn:not(.primary), .bubble { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .intro-panel { background: rgba(250, 252, 255, .94); }
 .sheet { background: rgba(250, 252, 255, .97); }
@@ -587,7 +570,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .manifest blockquote { padding-bottom: 34px; }
 @media (prefers-reduced-motion: reduce) { #emblem.on, #emblemR { animation: none; } }
 
-/* ───────── 05: aurora back, no box behind the words ───────── */
 .truth-card { background: none !important; border: 0; padding: 0 clamp(4px, 2vw, 24px); }
 .truth-card #rTruth { text-align: center; text-wrap: balance; text-shadow: 0 1px 14px rgba(6, 10, 40, .7); }
 .truth-card #rTruth::before { content: "\201C"; color: #b9c8ff; margin-right: .2em; }
@@ -604,7 +586,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .sheet.capturing .arms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; padding: 4px 0 0; }
 .sheet.capturing .car-nav { display: none; }
 
-/* ───────── one layout everywhere: the thought appears above the ice, like on mobile ───────── */
 .stagewrap { --ice-w: min(64vw, max(420px, calc((100dvh - 380px) * 1.5))); grid-template-columns: 1fr; justify-items: center; gap: 6px; }
 .lane-r { display: none !important; }
 .lane-l { display: flex; order: -1; min-height: 124px; width: 100%; align-items: center; justify-content: flex-end; }
@@ -613,11 +594,9 @@ body.thawing .ice .aurora { opacity: 1; }
 .ice-col { padding-top: 14px; }
 @media (min-width: 861px) and (orientation: landscape) { body.thawed .stagewrap { gap: clamp(32px, 4vw, 64px); } }
 
-/* ───────── facts: title + short rule ───────── */
 .fact-k small { display: none; }
 .fact-k::after { content: ""; display: block; width: 18px; height: 1px; background: var(--ink); opacity: .6; margin: 10px 0 4px; }
 
-/* ───────── before / after: one card, a day-night toggle ───────── */
 .item.phases { display: block; padding: clamp(20px, 2.6vw, 30px) clamp(20px, 3vw, 34px) clamp(24px, 3vw, 34px); border: 1px solid rgba(37, 69, 207, .14);
   transition: background .7s ease, border-color .7s ease; position: relative; overflow: hidden; }
 .item.phases[data-phase="before"] { background: linear-gradient(165deg, #dfe5f3, #cbd4ea); border-color: rgba(70, 86, 140, .2); }
@@ -650,7 +629,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .sheet.capturing .item.phases { background: #fff; }
 .sheet.capturing .item.phases::before, .sheet.capturing .item.phases::after { opacity: 0; }
 
-/* ───────── share card (what the saved image shows) ───────── */
 .share-wrap { position: fixed; left: -10000px; top: 0; pointer-events: none; }
 .share-card { width: 480px; padding: 34px 34px 28px; border-radius: 28px; background: linear-gradient(180deg, #ffffff, #f2f6ff); border: 1px solid rgba(37, 69, 207, .14);
   display: grid; justify-items: center; text-align: center; color: #14206a; font-family: var(--f-mincho); }
@@ -679,7 +657,6 @@ body.thawing .ice .aurora { opacity: 1; }
 .ph-panel h3 b { padding-top: 0; line-height: 1; }
 #rTruth::before, #rTruth::after, .sc-quote::before, .sc-quote::after { font-family: var(--f-en); font-size: 1.2em; line-height: 0; vertical-align: -.1em; }
 
-/* ───────── quote marks: large serif marks that open and close the line where it starts and ends ───────── */
 #rTruth::before, .truth-card #rTruth::before, .sc-quote::before, #rTruth::after, .truth-card #rTruth::after, .sc-quote::after {
   display: inline; position: static; height: auto; margin: 0; font: 400 2.6em/0 "Cormorant Garamond", "Bodoni Moda", Georgia, serif; vertical-align: -.42em; }
 #rTruth::before, .truth-card #rTruth::before, .sc-quote::before { content: "\201C"; margin-right: .06em; }
@@ -692,10 +669,8 @@ body.thawing .ice .aurora { opacity: 1; }
 .ta-acts .btn { min-height: 40px; padding: 0 20px; font-size: 13.5px; }
 .intro-panel .link.reset { margin-left: auto; color: #8a4a6a; text-decoration-color: rgba(138, 74, 106, .3); }
 
-/* ───────── badge: letter-spacing adds space after the last digit, so balance it ───────── */
 .item > p.truth-no, .truth-no { letter-spacing: .24em; padding: 6px calc(12px - .24em) 6px 12px; }
 
-/* ───────── thought log as a timeline ───────── */
 .sh-log ol { display: block; position: relative; margin: 14px 0 6px; padding: 0 0 0 30px; counter-reset: none; max-width: 760px; }
 .sh-log ol::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 14px; width: 1px; background: linear-gradient(180deg, rgba(37, 69, 207, .1), rgba(37, 69, 207, .45)); }
 .sh-log li { position: relative; padding: 0 0 24px; font: inherit; }
@@ -710,7 +685,6 @@ body.thawing .ice .aurora { opacity: 1; }
 #rTruth::before, .truth-card #rTruth::before, .sc-quote::before { vertical-align: -.24em; margin-right: .08em; }
 #rTruth::after, .truth-card #rTruth::after, .sc-quote::after { vertical-align: -.62em; margin-left: .08em; }
 
-/* ───────── leave confirmation ───────── */
 body.paused *, body.paused *::before, body.paused *::after { animation-play-state: paused !important; }
 .leave { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px max(18px, env(safe-area-inset-right, 0px)) 24px max(18px, env(safe-area-inset-left, 0px));
   background: rgba(10, 16, 52, .5); opacity: 0; transition: opacity .25s ease; }

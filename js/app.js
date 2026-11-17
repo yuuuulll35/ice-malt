@@ -8,7 +8,7 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } }
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
   };
 
   function seeded(str) {
@@ -22,7 +22,6 @@
     };
   }
 
-  /* ───────── sound (synthesised, no assets) ───────── */
   const Sfx = {
     ctx: null, out: null, noise: null,
     muted: store.get('icemelt:mute') === '1' || /[?&]mute\b/.test(location.search),
@@ -170,7 +169,6 @@
   });
   paintSound();
 
-  /* ───────── particles ───────── */
   const cv = $('#fx'), cx = cv.getContext('2d');
   let P = [], raf = 0, last = 0, W = 0, H = 0, ambient = false;
   function fit() {
@@ -243,7 +241,6 @@
     raf = (P.length || ambient) ? requestAnimationFrame(loop) : 0;
   }
 
-  /* ───────── liquid gradient background (WebGL, falls back to the CSS layers) ───────── */
   (function liquid() {
     const cv = document.getElementById('bgfx');
     if (!cv) return;
@@ -288,7 +285,6 @@ void main(){
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const uR = gl.getUniformLocation(pr, 'r'), uT = gl.getUniformLocation(pr, 't');
     const SCALE = innerWidth < 760 ? 0.22 : 0.3;
-    // the on-screen keyboard shrinks the viewport: keep the tallest height seen so the canvas is not resized (and cleared) on every open/close
     let tallest = 0, lastW = 0;
     const size = () => {
       const vw = document.documentElement.clientWidth || innerWidth;
@@ -307,7 +303,6 @@ void main(){
     requestAnimationFrame(frame);
   })();
 
-  /* ───────── data ───────── */
   const str = (v, max = 600) => (typeof v === 'string' || typeof v === 'number') ? String(v).trim().slice(0, max) : '';
   const STYLES = [[/깃|고사리|솜/, 'feather'], [/곧|바늘|직선|선/, 'needle'], [/판|육각|면|유리/, 'plate'], [/가시|창|칼|날/, 'spike'], [/이슬|구슬|방울|물/, 'dew']];
   const STYLE_KO = { feather: '깃털', needle: '곧음', plate: '판', spike: '가시', dew: '이슬' };
@@ -384,7 +379,6 @@ void main(){
     const c = d.crystal || {}, light = c.light || {};
     const rng = seeded(str(c.name) + str(d.npc)), keys = Object.keys(STYLE_KO);
     const arms = (Array.isArray(c.arms) ? c.arms : []).slice(0, 6).map(a => {
-      // a saved reading already holds the internal key (e.g. "needle"); a fresh answer holds the Korean grain name
       const raw = str(a && a.style, 12), hit = STYLE_KO[raw] ? [null, raw] : STYLES.find(([re]) => re.test(raw));
       return { name: str(a && a.name, 40), len: clamp(+(a && a.len) || 6, 1, 10), style: hit ? hit[1] : keys[rng() * keys.length | 0], desc: str(a && a.desc, 300) };
     });
@@ -398,7 +392,6 @@ void main(){
     };
   }
 
-  /* ───────── snowflake: twelve-fold faceted crystal, lit from the upper left ───────── */
   const PARTS = ['큰 축', '사이 축', '곁가지', '끝 장식', '중심 판', '사이 끝'];
   function snowflake(svg, data, uid) {
     const A = data.crystal.arms, f = v => (+v).toFixed(2), U = id => `${uid}${id}`;
@@ -414,7 +407,6 @@ void main(){
     const facet = (pts, nx, ny) => { faces += `<path d="${poly(pts)}" fill="${tone(nx, ny)}"/>`; };
     const ridge = (a, b, w = 0.45) => { ridges += `M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}`; };
 
-    // a two-faced blade from (bx,by) toward angle ang (rad, 0 = up), half-width profile [[t,w]...]
     const blade = (bx, by, ang, L, prof) => {
       const dx = Math.sin(ang), dy = -Math.cos(ang), px = -dy, py = dx;
       const at = (t, w, s) => [bx + dx * L * t + px * w * s, by + dy * L * t + py * w * s];
@@ -423,7 +415,6 @@ void main(){
       ridge([bx, by], tip);
       return tip;
     };
-    // a flat hexagonal plate split into six lit sectors
     const plate = (cx, cy, r, rot = 0, ring = 0) => {
       const v = i => { const a = (i * 60 + rot) * Math.PI / 180; return [cx + Math.sin(a) * r, cy - Math.cos(a) * r]; };
       for (let i = 0; i < 6; i++) {
@@ -450,7 +441,6 @@ void main(){
       return blade(x - dx * z * 0.3, y - dy * z * 0.3, ang, z * 1.8, [[0.4, z * 0.42]]);
     };
 
-    // the first way of loving decides the whole architecture of the crystal; the other five tune it
     const TYPE = A[0].style, n1 = A[1].len / 10, n2 = A[2].len / 10, n3 = A[3].len / 10, n4 = A[4].len / 10, n5 = A[5].len / 10;
     const bead = (x, y, r) => { faces += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="url(#${U('bead')})"/>`; };
     const pt = (ang, r) => [Math.sin(ang) * r, -Math.cos(ang) * r];
@@ -458,7 +448,6 @@ void main(){
     for (let i = 0; i < 6; i++) {
       const ang = i * Math.PI / 3, ang2 = ang + Math.PI / 6;
       if (TYPE === 'feather') {
-        // classic stellar dendrite (the original design)
         const L0 = 62 + A[0].len * 2.4, L1 = L0 * (0.27 + A[1].len * 0.011);
         core = 10 + A[4].len * 0.8;
         const nB = 2 + Math.round(A[2].len / 4.5), bLen = L0 * (0.18 + A[2].len * 0.014);
@@ -473,7 +462,6 @@ void main(){
         const tip = blade(Math.sin(ang) * core * 0.6, -Math.cos(ang) * core * 0.6, ang, L0 - core * 0.6, PROF.feather);
         ornament(A[3].style, tip[0], tip[1], ang, z3);
       } else if (TYPE === 'needle') {
-        // needle star: twelve clean spears, no branches, a small bright hub
         core = 6 + n4 * 3;
         const L = 90, L2 = 52 + n1 * 26;
         blade(...pt(ang, core * 0.4), ang, L, [[0.1, 1.6], [0.7, 2.1], [0.94, 0.8]]);
@@ -482,7 +470,6 @@ void main(){
         bead(...pt(ang, ring), 1.6 + n5 * 1.2);
         bead(...pt(ang2, ring * 0.8), 1.1 + n5 * 0.8);
       } else if (TYPE === 'plate') {
-        // stellar plate: six broad faceted plate-arms that widen into a flat hexagon near the tip
         core = 14 + n4 * 4;
         const L = 78 + n1 * 10, wide = 7 + n2 * 3;
         blade(...pt(ang, core * 0.7), ang, L - core * 0.7, [[0.05, wide * 0.55], [0.32, wide * 0.42], [0.55, wide], [0.78, wide * 0.9], [0.92, wide * 0.4]]);
@@ -490,7 +477,6 @@ void main(){
         plate(...pt(ang, L + 3 + n3 * 2), 3.5 + n3 * 3, ang * 180 / Math.PI + 30, 0.4);
         blade(...pt(ang2, core * 0.8), ang2, 12 + n5 * 10, [[0.1, 3.4], [0.55, 4.2]]);
       } else if (TYPE === 'spike') {
-        // dagger star: six wide, sharp blades with swept-back barbs
         core = 9 + n4 * 4;
         const L = 80 + n1 * 10;
         blade(...pt(ang, core * 0.3), ang, L, [[0.05, 9], [0.22, 11], [0.6, 4]]);
@@ -501,7 +487,6 @@ void main(){
         }
         blade(...pt(ang2, core * 0.5), ang2, 30 + n5 * 18, [[0.05, 5], [0.25, 6]]);
       } else {
-        // pearl star: slender arms, a few twigs that each end in a frost pearl, a large pearl at every tip
         core = 9 + n4 * 3;
         const L = 72 + n1 * 10;
         const tip = blade(...pt(ang, core * 0.5), ang, L - core * 0.5, [[0.06, 1.8], [0.7, 2.2], [0.95, 0.8]]);
@@ -541,7 +526,6 @@ void main(){
     host.parentNode.insertBefore(halo, host);
   }
 
-  /* ───────── ice ───────── */
   const ICE_LV = [
     { name: '살얼음', d: [3, 2], m: [2, 3], kd: 0.25, km: 0.25, hp: [1, 2] },
     { name: '얇은 얼음', d: [4, 2], m: [2, 4], kd: 0.35, km: 0.35, hp: [2, 3] },
@@ -602,7 +586,6 @@ void main(){
     b.svg.appendChild(p);
   }
 
-  /* ───────── game state ───────── */
   const state = { data: null, blocks: [], broken: 0, taps: 0, melt: 0, next: 0, thresholds: [], queue: [], lastShow: 0, timer: 0, side: 0, heartRect: null, hex: '#fff', sub: '#fff', done: false };
   const root = document.documentElement, body = document.body;
   const ice = $('#ice'), blocksEl = $('#blocks'), laneL = $('#laneL'), laneR = $('#laneR');
@@ -658,7 +641,6 @@ void main(){
     freezeIn();
   }
 
-  // entrance: the bare heart beats alone, then ice closes in from the edges and seals it
   function freezeIn() {
     const curtain = $('#curtain'), msg = $('#cMsg'), cue = $('#cue');
     const say = (t, cls) => { cue.textContent = t; cue.className = 'cue'; void cue.offsetWidth; cue.classList.add(cls); };
@@ -717,14 +699,12 @@ void main(){
       if (b.hp === Math.floor(b.max / 2)) Sfx.crack();
       return;
     }
-    // the last piece holds until every inner voice has surfaced
     if (state.broken === state.blocks.length - 1 && (state.queue.length || state.timer)) {
       b.hp = 1;
       b.el.classList.remove('jolt'); void b.el.offsetWidth; b.el.classList.add('jolt');
       chips(cxp, cyp, 4); Sfx.tap(0.9);
       return;
     }
-    // break
     state.broken++;
     const lastOne = state.broken === state.blocks.length;
     b.el.classList.add('gone'); b.el.disabled = true;
@@ -885,7 +865,6 @@ void main(){
   $('#phases').addEventListener('click', e => { const t = e.target.closest('[data-p]'); if (t) { setPhase(t.dataset.p); Sfx.ui(); } });
   $('#phases .ph-panels').addEventListener('click', () => setPhase($('#phases').dataset.phase === 'before' ? 'after' : 'before'));
 
-  /* ───────── save the certificate as an image (same approach as love-dive) ───────── */
   async function fontEmbedCSS(node) {
     const used = new Set(); for (const ch of node.innerText) used.add(ch.codePointAt(0));
     const hits = range => {
@@ -934,7 +913,6 @@ void main(){
     g.save(); g.shadowColor = 'rgba(20, 36, 110, .28)'; g.shadowBlur = pad * 0.5; g.shadowOffsetY = pad * 0.15; g.drawImage(card, pad, Math.round((H - card.height) / 2)); g.restore();
     const blob = await new Promise(ok => out.toBlob(ok, 'image/jpeg', 0.92));
     if (!blob) throw new Error('render failed');
-    // inside the claude.ai artifact viewer, files go through its downloads capability
     const dl = window.claude && window.claude.use ? await Promise.race([window.claude.use('downloads').catch(() => null), new Promise(ok => setTimeout(() => ok(null), 1500))]) : null;
     if (dl) {
       try { await dl.save({ filename, data: blob }); return 'downloaded'; }
@@ -971,7 +949,6 @@ void main(){
     show('intro');
   }
 
-  /* ───────── OOC steps ───────── */
   const STEPS = [
     { title: '해동 기록', desc: '얼음이 깨질 때마다 새어 나올 속마음과 마지막 본심을 받습니다.', ph: '대상: … / …\n해동 1 [감정: …] (속마음: …)\n본심: …' },
     { title: '눈 결정 감정', desc: '같은 채팅에 이어서 보냅니다. 얼음이 다 깨진 뒤 남는 눈 결정 한 송이의 이름, 핵, 여섯 가지를 받습니다.', ph: '결정: … · …\n핵: …\n가지 1 [이름: …] [길이: 0] [결: …] (설명: …)' }
@@ -1088,22 +1065,20 @@ void main(){
   [0, 1].forEach(i => { const t = store.get('icemelt2:a' + i); if (t && (i === 0 || answers[0])) accept(i, t, true); });
   paintSteps();
   let lastData = null;
-  try { lastData = normalize(JSON.parse(store.get('icemelt2:last'))); } catch { /* nothing saved */ }
+  try { lastData = normalize(JSON.parse(store.get('icemelt2:last'))); } catch {}
   lastBtn.hidden = !lastData;
 
-  /* ───────── wiring ───────── */
   startBtn.addEventListener('click', () => { try { begin(build()); } catch (e) { toast(e.message); } });
   $('#resetBtn').addEventListener('click', () => { resetSteps(); toast('입력한 내용을 모두 지웠어요.'); $('[data-act="copy"]', stepEl(0)).focus(); });
   $('#sampleBtn').addEventListener('click', () => { Sfx.init(); startPlay(normalize({ ...parse1(window.ICE.SAMPLE[0]), ...parse2(window.ICE.SAMPLE[1]) })); });
   lastBtn.addEventListener('click', () => {
     let d = null;
-    try { d = normalize(JSON.parse(store.get('icemelt2:last'))); } catch { /* fall through */ }
+    try { d = normalize(JSON.parse(store.get('icemelt2:last'))); } catch {}
     if (d) { Sfx.init(); startPlay(d); } else toast('저장된 해동 기록이 없어요.');
   });
   $('#toResult').addEventListener('click', () => { Sfx.ui(); showResult(); });
   $('#againBtn').addEventListener('click', () => startPlay(state.data));
   $('#newBtn').addEventListener('click', goHome);
-  /* ───────── leave confirmation: dim, freeze everything, ask ───────── */
   const leave = $('#leave');
   let leaveFrom = null;
   function openLeave() {
