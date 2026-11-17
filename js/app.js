@@ -917,6 +917,12 @@ void main(){
     g.save(); g.shadowColor = 'rgba(20, 36, 110, .28)'; g.shadowBlur = pad * 0.5; g.shadowOffsetY = pad * 0.15; g.drawImage(card, pad, pad); g.restore();
     const blob = await new Promise(ok => out.toBlob(ok, 'image/jpeg', 0.92));
     if (!blob) throw new Error('render failed');
+    // inside the claude.ai artifact viewer, files go through its downloads capability
+    const dl = window.claude && window.claude.use ? await Promise.race([window.claude.use('downloads').catch(() => null), new Promise(ok => setTimeout(() => ok(null), 1500))]) : null;
+    if (dl) {
+      try { await dl.save({ filename, data: blob }); return 'downloaded'; }
+      catch (e) { if (e && e.code === 'declined') return 'declined'; throw e; }
+    }
     const file = new File([blob], filename, { type: 'image/jpeg' });
     if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: 'ICE MELT' }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'shared'; }
@@ -1075,7 +1081,7 @@ void main(){
     btn.disabled = true; btn.textContent = '만드는 중…';
     try {
       const how = await saveSheetImage($('#sheet'), 'ice-melt-certificate.jpg');
-      toast(how === 'shared' ? '이미지를 공유 창으로 보냈어요.' : '이미지를 저장했어요.');
+      if (how !== 'declined') toast(how === 'shared' ? '이미지를 공유 창으로 보냈어요.' : '이미지를 저장했어요.');
     } catch (err) {
       toast('이미지를 만들지 못했어요. 잠시 후 다시 눌러 주세요.');
     } finally { btn.disabled = false; btn.textContent = label; }
