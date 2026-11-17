@@ -834,7 +834,7 @@ void main(){
     snowflake($('#scEmblem'), d, 'e3');
     $('#scType').textContent = T[0]; $('#scTypeEn').textContent = T[1];
     $('#scNpc').textContent = d.npc; $('#scPc').textContent = d.pc; $('#scName').textContent = c.name;
-    $('#scLight').textContent = c.light.name || '—'; $('#scIce').textContent = ICE_LV[d.ice.level - 1].name;
+    $('#scLight').textContent = c.light.name || '—';
     $('#scQuote').textContent = c.truth || d.final;
     setMelt(1);
     show('result');

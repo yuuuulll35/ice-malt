@@ -667,7 +667,7 @@ body.thawing .ice .aurora { opacity: 1; }
 .sc-pair b { font: 500 14px/1.4 var(--f-mincho); letter-spacing: .04em; color: #14206a; }
 .sc-pair i { width: 22px; height: 1px; background: currentColor; margin: 0 4px; }
 .sc-name { margin: 0 0 18px; font: 600 32px/1.3 var(--f-mincho); letter-spacing: .04em; color: #14206a; }
-.sc-facts { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+.sc-facts { width: 100%; display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 22px; }
 .sc-facts p { margin: 0; padding: 12px 10px; border-radius: 14px; background: #eef3ff; display: grid; gap: 4px; }
 .sc-facts span { font: 500 11px/1.4 var(--f-body); color: #6672a8; }
 .sc-facts b { font: 600 15px/1.4 var(--f-mincho); color: #14206a; }
