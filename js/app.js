@@ -686,21 +686,49 @@ void main(){
     const named = c.arms.map((a, i) => ({ ...a, i })).filter(a => a.name);
     fillList($('#rArms'), named, a => {
       const li = el('li');
-      li.append(el('b', '', String(a.i + 1)));
-      const box = el('div'), head = el('p', 'arm-name', a.name);
-      head.append(el('span', 'arm-style', `${PARTS[a.i]} · ${STYLE_KO[a.style]}의 결`));
-      box.append(head);
-      if (a.desc) box.append(el('p', '', a.desc));
-      li.append(box);
+      const top = el('div', 'arm-top');
+      top.append(el('b', 'arm-no', String(a.i + 1).padStart(2, '0')), el('span', 'arm-part', PARTS[a.i]));
+      li.append(top, el('p', 'arm-name', a.name));
+      if (a.desc) li.append(el('p', 'arm-desc', a.desc));
+      const foot = el('div', 'arm-foot');
+      foot.append(el('span', 'arm-style', `${STYLE_KO[a.style]}의 결`));
+      const meter = el('span', 'arm-len');
+      meter.setAttribute('aria-label', `머문 시간 ${a.len} / 10`);
+      for (let k = 1; k <= 10; k++) meter.append(el('i', k <= a.len ? 'on' : ''));
+      foot.append(meter);
+      li.append(foot);
       return li;
     });
+    const dots = $('#carDots');
+    dots.textContent = '';
+    named.forEach(() => dots.append(el('i')));
+    paintCar();
     $('#rArms').closest('.item').hidden = !named.length;
     fillList($('#rLog'), d.balloons, b => { const li = el('li'); if (b.tag) li.append(el('b', '', b.tag)); li.append(document.createTextNode(b.text)); return li; });
     $('#rLogN').textContent = `(${d.balloons.length})`;
     snowflake($('#emblemR'), d, 'e2');
     setMelt(1);
     show('result');
+    $('#rArms').scrollLeft = 0;
+    requestAnimationFrame(paintCar);
   }
+
+  function paintCar() {
+    const list = $('#rArms'), items = [...list.children];
+    if (!items.length) return;
+    const x = list.scrollLeft, w = items[0].getBoundingClientRect().width + 14;
+    const cur = Math.round(x / w), max = list.scrollWidth - list.clientWidth;
+    [...$('#carDots').children].forEach((d, i) => d.classList.toggle('on', i === Math.min(cur, items.length - 1)));
+    const [prev, next] = document.querySelectorAll('.car-btn');
+    prev.disabled = x <= 2; next.disabled = x >= max - 2;
+    $('.car-nav').hidden = max <= 2;
+  }
+  $('#rArms').addEventListener('scroll', () => requestAnimationFrame(paintCar), { passive: true });
+  addEventListener('resize', () => { if (body.dataset.screen === 'result') paintCar(); });
+  document.querySelectorAll('.car-btn').forEach(btn => btn.addEventListener('click', () => {
+    const list = $('#rArms'), first = list.children[0];
+    if (first) list.scrollBy({ left: (+btn.dataset.dir) * (first.getBoundingClientRect().width + 14), behavior: reduce ? 'auto' : 'smooth' });
+  }));
 
   function resultText() {
     const d = state.data, c = d.crystal;
